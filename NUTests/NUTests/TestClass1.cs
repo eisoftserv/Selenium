@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 namespace NUTests
 {
     [TestFixture]
+    [Description("simple tests")]
     public class TestClass1
     {
 
@@ -24,6 +25,7 @@ namespace NUTests
 
 
         [Test]
+        [Description("doing a Google search")]
         public void GoogleSearch()
         {
             using (IWebDriver driver = new FirefoxDriver())
@@ -31,8 +33,9 @@ namespace NUTests
                 driver.Url = "https://www.google.ro";
                 var obj = driver.FindElement(By.XPath(".//*[@id='lst-ib']"));
                 obj.SendKeys("selenium");
+                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
-                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//*[@id='tsf']/div[2]/div[3]/center/input")));
                 obj.Click();
 
@@ -59,11 +62,11 @@ namespace NUTests
 
 
         [Test]
+        [Description("sending an email message to myself")]
         public void GoogleMail()
         {
-            //--------------------------------------------------
-            string address = "test.user@gmail.com";
-            string pwd = "test.password";
+            string address = "testuser@gmail.com";
+            string pwd = "testpassword";
             string subject = "TestMessage";
 
             using (IWebDriver driver = new FirefoxDriver())
@@ -73,6 +76,7 @@ namespace NUTests
                 var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
                 var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("identifier")));
                 obj.SendKeys(address);
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Next']")));
