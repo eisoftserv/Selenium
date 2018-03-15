@@ -1,23 +1,23 @@
 ﻿using NUnit.Framework;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Firefox;
+using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using System;
 
-namespace NUTests
+namespace NUChrome
 {
     [TestFixture]
-    [Description("simple, independent tests")]
-    public class TestClass1
+    [Description("same code as in TestClass1.cs - just testing with ChromeDriver")]
+    public class TestChrome1
     {
 
 
 
         [Test]
         [Description("doing a Google search")]
-        public void GoogleSearch()
+        public void Chrome_GoogleSearch()
         {
-            using (var driver = new FirefoxDriver())
+            using (var driver = new ChromeDriver())
             {
                 driver.Manage().Window.Maximize();
                 driver.Url = "https://www.google.ro";
@@ -49,13 +49,13 @@ namespace NUTests
 
         [Test]
         [Description("sending an email message to myself")]
-        public void GoogleMail()
+        public void Chrome_GoogleMail()
         {
             string address = "testuser@gmail.com";
             string pwd = "testpassword";
             string subject = "TestMessage";
 
-            using (var driver = new FirefoxDriver())
+            using (var driver = new ChromeDriver())
             {
                 driver.Manage().Window.Maximize();
                 driver.Url = "https://mail.google.com/";
@@ -129,11 +129,11 @@ namespace NUTests
 
         [Test]
         [Description("Searching on OLX")]
-        public void OlxBrowsing()
+        public void Chrome_OlxBrowsing()
         {
             string res = "Not Found";
 
-            using (var driver = new FirefoxDriver())
+            using (var driver = new ChromeDriver())
             {
                 driver.Manage().Window.Maximize();
                 var jse = (IJavaScriptExecutor)driver;
@@ -198,8 +198,7 @@ namespace NUTests
 
 
 
-    } // TestClass1
-
+    } // TestChrome1
 
 
 } // namespace
