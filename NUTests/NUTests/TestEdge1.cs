@@ -1,23 +1,27 @@
 ﻿using NUnit.Framework;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Firefox;
+using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace NUTests
 {
-    [TestFixture]
-    [Description("simple, independent tests")]
-    public class TestClass1
-    {
 
+    [TestFixture]
+    [Description("same code as in TestClass1.cs - just testing with EdgeDriver")]
+    public class TestEdge1
+    {
 
 
         [Test]
         [Description("doing a Google search")]
-        public void FF_GoogleSearch()
+        public void Edge_GoogleSearch()
         {
-            using (var driver = new FirefoxDriver())
+            using (IWebDriver driver = new EdgeDriver())
             {
                 driver.Manage().Window.Maximize();
                 driver.Url = "https://www.google.ro";
@@ -49,14 +53,14 @@ namespace NUTests
 
         [Test]
         [Description("sending an email message to myself")]
-        public void FF_GoogleMail()
+        public void Edge_GoogleMail()
         {
             string address = "ellailona2016@gmail.com";
             string pwd = "fulonlogo";
             string subject = "TestMessage";
             string helloText = "Hello from Selenium!";
 
-            using (var driver = new FirefoxDriver())
+            using (var driver = new EdgeDriver())
             {
                 driver.Manage().Window.Maximize();
                 driver.Url = "https://mail.google.com/";
@@ -131,11 +135,11 @@ namespace NUTests
 
         [Test]
         [Description("Searching on OLX")]
-        public void FF_OlxBrowsing()
+        public void Edge_OlxBrowsing()
         {
             string res = "Not Found";
 
-            using (var driver = new FirefoxDriver())
+            using (var driver = new EdgeDriver())
             {
                 driver.Manage().Window.Maximize();
                 var jse = (IJavaScriptExecutor)driver;
@@ -199,7 +203,7 @@ namespace NUTests
 
 
 
-    } // TestClass1
+    } // TestEdge1
 
 
 

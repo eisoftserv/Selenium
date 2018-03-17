@@ -29,23 +29,24 @@ namespace NUTests
             driver.Manage().Window.Maximize();
             driver.Url = loginUrl;
 
-            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='username']")));
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
+            var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("username")));
             obj.SendKeys(user);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Name("username"), user));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='password']")));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("password")));
             obj.SendKeys(password);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Name("password"), password));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//button[contains(@class,'loginbtn') and @type='submit']")));
             obj.Click();
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
         } // LoggingIn
 
@@ -58,11 +59,11 @@ namespace NUTests
             string logoutUrl = "https://www.phptravels.net/account/logout/";
             driver.Navigate().GoToUrl(logoutUrl);
 
-            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
             // normally we are redirected to the Login page
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
             var obj = wait.Until(ExpectedConditions.ElementExists(By.Name("username")));
 
             driver.Quit();
@@ -78,8 +79,8 @@ namespace NUTests
             string startUrl = "https://www.phptravels.net/";
 
             driver.Navigate().GoToUrl(startUrl);
-            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
         } // GoToStartPage
 
@@ -97,27 +98,24 @@ namespace NUTests
             obj.Click();
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
             //--------------- tour
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@id='s2id_autogen12']/a")));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@id='s2id_autogen10']/a")));
             obj.Click();
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[contains(@class,'select2-focused')]")));
             obj.SendKeys("Dubai");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//li[starts-with(@class,'select2-results-dept-1')]")));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//li[starts-with(@class,'select2-results-dept-1') and contains(@class,'select2-result-selectable')]")));
             obj.Click();
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
             //------------------ appointment
 
@@ -132,36 +130,35 @@ namespace NUTests
             obj.SendKeys(sdate + Keys.Tab);
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
             //----------------- guests
 
-            var objs = driver.FindElements(By.XPath(".//select[@name='adults']"));
-            // we have 2 select nodes with the same id and name attributes
-            var dd = new SelectElement(objs[1]);
+            obj = driver.FindElement(By.XPath(".//select[@name='adults' and contains(@class,'selectx')]"));
+            var dd = new SelectElement(obj);
             dd.SelectByText("1");
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
             //----------------- submit search
 
             // we have multiple submit buttons, the second one works for Tours
-            objs = driver.FindElements(By.XPath(".//button[@type='submit']"));
+            var objs = driver.FindElements(By.XPath(".//button[@type='submit']"));
             objs[1].Click();
 
             //---------------------- reviewing selection
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//button[text()='Book Now']")));
             jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//button[text()='Book Now']")));
@@ -171,14 +168,14 @@ namespace NUTests
             //---------------------- filling guest data and confirming booking
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//input[@placeholder='Name']")));
             jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
             string guestName = "Jane Doe" + DateTime.Now.Hour.ToString() + DateTime.Now.Minute.ToString();
             string guestPassport = (Math.Pow(DateTime.Now.Hour * DateTime.Now.Minute * DateTime.Now.Second, 2)).ToString();
@@ -187,17 +184,14 @@ namespace NUTests
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@placeholder='Name']")));
             obj.SendKeys(guestName);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@placeholder='Passport']")));
             obj.SendKeys(guestPassport);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@placeholder='Age']")));
             obj.SendKeys(guestAge);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//button[text()='CONFIRM THIS BOOKING']")));
@@ -207,20 +201,18 @@ namespace NUTests
             //----------------------- payment options
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(7));
             obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//button[text()='Pay on Arrival']")));
             jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(9));
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//button[text()='Pay on Arrival']")));
             obj.Click();
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             // handling JavaScript modal dialog
             try
@@ -251,7 +243,8 @@ namespace NUTests
             obj.Click();
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
+
 
             //------------- stepping into the Angular gadjet's iframe
 
@@ -324,38 +317,31 @@ namespace NUTests
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//select[@name='ADULT1:honorific-prefix']")));
             var dd = new SelectElement(obj);
             dd.SelectByText("Mr");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='ADULT1:fname']")));
             obj.SendKeys(fname);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='ADULT1:lname']")));
             obj.SendKeys(lname);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Same as first adult']")));
             obj.Click();
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//input[@name='email']")));
             var jse = (IJavaScriptExecutor)driver;
             jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(3));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='email']")));
             obj.SendKeys(fname + "@" + lname + ".com");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='mobile']")));
             obj.SendKeys("0505555555");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[@class='ng-scope' and text()='Continue']")));
@@ -366,16 +352,20 @@ namespace NUTests
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
             obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//*[@class='ng-scope' and text()='Remove']")));
             jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[@class='ng-scope' and text()='Remove']")));
 
+            var lnks = driver.FindElements(By.XPath(".//*[starts-with(@class,'ts-card__option-add')]"));
             objs = driver.FindElements(By.XPath(".//*[@class='ng-scope' and text()='Remove']"));
-            if (objs.Count > 0) objs[0].Click();
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
-            if (objs.Count > 1) objs[1].Click();
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
+
+            for (int i=0; i<2; i++)
+            {
+                if (objs.Count <= i) break;
+                objs[i].Click();
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(ExpectedConditions.TextToBePresentInElement(lnks[i], "Add to Booking"));
+            }
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[@class='ng-scope' and text()='Continue']")));
@@ -386,64 +376,52 @@ namespace NUTests
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='cardnumber']")));
             obj.SendKeys("4111111111111111"); // test number for VISA cards
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='ccname']")));
             obj.SendKeys(fname + " " + lname);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//select[@name='ccmonth']")));
             dd = new SelectElement(obj);
             dd.SelectByText("02");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//select[@name='ccyear']")));
             dd = new SelectElement(obj);
             dd.SelectByText("2020");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='cvv']")));
             obj.SendKeys("123");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='billingAddressLine1']")));
             obj.SendKeys("123 Main Street");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='billingAddressLine2']")));
             obj.SendKeys("PO BOX 123");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='billingPostalCode']")));
             obj.SendKeys("9966");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='billingCity']")));
             obj.SendKeys("Dubai");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//input[@name='billingContactNo']")));
             jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(3));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='billingContactNo']")));
             obj.SendKeys("0505555555");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//button[text()='Book now']")));
             obj.Click();
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             //------------------- handling voucher offer - sometimes it appears, other times not
 
@@ -452,7 +430,6 @@ namespace NUTests
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[@class='ng-scope' and text()='Continue (without voucher)']")));
                 obj.Click();
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
             }
             catch
             { }
@@ -463,7 +440,10 @@ namespace NUTests
 
             // stepping out from the iframe of the Angular gadget
             driver.SwitchTo().DefaultContent();
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(3));
+
+            // dummy verification 
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
             Assert.Pass("Booking Flight done");
 
@@ -474,7 +454,7 @@ namespace NUTests
         public void InvoicePageCheck(string yesMessage, string noMessage)
         {
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//div[@id='preloader']")));
+            wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
 
             //--------------- verifying that we are on the Invoice page
             bool ok = false;
