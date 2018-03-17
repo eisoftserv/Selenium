@@ -54,6 +54,7 @@ namespace NUChrome
             string address = "ellailona2016@gmail.com";
             string pwd = "fulonlogo";
             string subject = "TestMessage";
+            string helloText = "Hello from Selenium!";
 
             using (var driver = new ChromeDriver())
             {
@@ -63,61 +64,62 @@ namespace NUChrome
                 var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
                 var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("identifier")));
                 obj.SendKeys(address);
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+                wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Name("identifier"), address));
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Next']")));
                 obj.Click();
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("password")));
                 obj.SendKeys(pwd);
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Name("password"), pwd));
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Next']")));
                 obj.Click();
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[text()='COMPOSE']")));
                 obj.Click();
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("to")));
                 obj.SendKeys(address);
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Name("to"), address));
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("subjectbox")));
                 obj.SendKeys(subject);
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Name("subjectbox"), subject));
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@role='textbox']")));
-                obj.SendKeys("Hello from Selenium!");
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
+                obj.SendKeys(helloText);
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Send']")));
                 obj.Click();
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(3));
 
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
                 bool closed = wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//*[text()='Send']")));
                 Assert.That(closed, Is.True);
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[starts-with(@title,'Google Account')]")));
                 obj.Click();
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(3));
 
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.LinkText("Sign out")));
                 obj.Click();
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+
+                // normally the page for login password is displayed
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
+                obj = wait.Until(ExpectedConditions.ElementExists(By.Name("password")));
 
                 driver.Quit();
 
@@ -167,17 +169,6 @@ namespace NUChrome
                 obj.SendKeys(searchKey + Keys.Tab);
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("search-text"), searchKey));
-
-                //// looking for a modal Advert with custom content, and then closing it 
-                //wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
-                //obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[@class='highlight-close']")));
-                ////----------------------------
-                //wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                //obj = wait.Until(ExpectedConditions.ElementExists(By.Id("search-submit")));
-                //Assert.That(obj.Displayed, Is.True);
-                //obj = driver.FindElement(By.XPath(".//*[@class='highlight-close']"));
-                ////----------------------------
-                //obj.Click();
 
                 // submitting the search
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
