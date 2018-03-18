@@ -10,22 +10,23 @@ namespace NUTests
     [Description("simple, independent tests")]
     public class TestClass1
     {
-
-
-
         [Test]
         [Description("doing a Google search")]
         public void FF_GoogleSearch()
         {
             using (var driver = new FirefoxDriver())
             {
+                string searchKey = "selenium";
                 driver.Manage().Window.Maximize();
                 driver.Url = "https://www.google.ro";
 
-                var obj = driver.FindElement(By.Id("lst-ib"));
-                obj.SendKeys("selenium" + Keys.Tab);
-
                 var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+                var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("lst-ib")));
+                obj.SendKeys(searchKey + Keys.Tab);
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("lst-ib"), searchKey));
+
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//input[@name='btnK']")));
                 obj.Click();
 
@@ -51,8 +52,8 @@ namespace NUTests
         [Description("sending an email message to myself")]
         public void FF_GoogleMail()
         {
-            string address = "ellailona2016@gmail.com";
-            string pwd = "fulonlogo";
+            string address = "testuser@gmail.com";
+            string pwd = "testpassword";
             string subject = "TestMessage";
             string helloText = "Hello from Selenium!";
 
@@ -64,8 +65,6 @@ namespace NUTests
                 var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
                 var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("identifier")));
                 obj.SendKeys(address);
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-                wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Name("identifier"), address));
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Next']")));
@@ -74,8 +73,6 @@ namespace NUTests
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("password")));
                 obj.SendKeys(pwd);
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Name("password"), pwd));
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Next']")));
@@ -88,14 +85,10 @@ namespace NUTests
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("to")));
                 obj.SendKeys(address);
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Name("to"), address));
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("subjectbox")));
                 obj.SendKeys(subject);
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Name("subjectbox"), subject));
 
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@role='textbox']")));
@@ -113,7 +106,7 @@ namespace NUTests
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[starts-with(@title,'Google Account')]")));
                 obj.Click();
 
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.LinkText("Sign out")));
                 obj.Click();
 
@@ -131,18 +124,19 @@ namespace NUTests
 
         [Test]
         [Description("Searching on OLX")]
-        public void FF_OlxBrowsing()
+        public void FF_OlxSimpleSearch()
         {
-            string res = "Not Found";
+            string res = "Search error";
+            string searchKey = "ipad";
 
             using (var driver = new FirefoxDriver())
             {
                 driver.Manage().Window.Maximize();
                 var jse = (IJavaScriptExecutor)driver;
-                string searchKey = "ipad";
 
                 driver.Url = "https://www.olx.ro";
 
+                // closing bottom bar for informing about 
                 var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
                 var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//a[starts-with(@class,'cookiesBarClose') and contains(@class,'cfff')]")));
                 obj.Click();
@@ -166,7 +160,7 @@ namespace NUTests
                 // looking for the Search autocomplete field
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("search-text")));
-                obj.SendKeys(searchKey + Keys.Tab);
+                obj.SendKeys(searchKey);
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("search-text"), searchKey));
 
@@ -175,17 +169,17 @@ namespace NUTests
                 obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("search-submit")));
                 obj.Click();
 
-                // waiting for the results page (with promotions or without promotions or no results at all)
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
-                obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//div[starts-with(@class,'section') or starts-with(@class,'dontHasPromoted') or starts-with(@class,'emptynew')]")));
-
+                // waiting for the results page
                 try
                 {
-                    obj = driver.FindElement(By.XPath(".//div[starts-with(@class,'emptynew')]"));
+                    wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+                    obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//div[starts-with(@class, 'dontHasPromoted')]")));
+                    obj = driver.FindElement(By.XPath(".//*[starts-with(text(),'Am gasit')]"));
+                    res = obj.Text;
                 }
                 catch
                 {
-                    obj = driver.FindElement(By.XPath(".//*[starts-with(text(),'Am gasit')]"));
+                    obj = driver.FindElement(By.XPath(".//*[starts-with(text(),'Nu am gasit anunturi')]"));
                     res = obj.Text;
                 }
 
@@ -195,7 +189,7 @@ namespace NUTests
 
             Assert.Pass(res);
 
-        } // OlxBrowsing
+        } // OlxSimpleSearch
 
 
 
