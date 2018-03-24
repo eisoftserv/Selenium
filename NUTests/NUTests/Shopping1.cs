@@ -25,15 +25,17 @@ namespace NUTests
         [Description("logging in")]
         public void FF_Login()
         {
+
             string loginUrl = "http://automationpractice.com/";
             string user = "test@gmail.com";
             string password = "test";
 
             // initializing driver and JavaScript executor
             driver = new FirefoxDriver();
-            driver.Manage().Window.Size = new System.Drawing.Size(1024, 768);
             jse = (IJavaScriptExecutor)driver;
-            
+            // starting with the smallest screen area
+            driver.Manage().Window.Size = new System.Drawing.Size(1024, 720);
+
             // navigating to the landing page
             driver.Url = loginUrl;
 
@@ -56,6 +58,8 @@ namespace NUTests
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("passwd"), password));
 
+            obj = driver.FindElement(By.Id("SubmitLogin"));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("SubmitLogin")));
             obj.Click();
@@ -63,7 +67,6 @@ namespace NUTests
             // normally the "sign out" button should be present now
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName("logout")));
-
 
         } // LoggingIn
 
@@ -86,10 +89,26 @@ namespace NUTests
 
 
 
-        [Test]
-        [Order(1)]
-        public void FF_ShopOneItem()
+        [SetUp]
+        [Description("scrolling the NAV ")]
+        public void FF_GoToLandingPage()
         {
+            string startUrl = "http://automationpractice.com/index.php";
+
+            driver.Navigate().GoToUrl(startUrl);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("search_query_top")));
+
+        } // GoToLandingPage
+
+
+
+        [Test]
+        [Order(2)]
+        public void FF_Choose1024x768()
+        {
+            driver.Manage().Window.Size = new System.Drawing.Size(1024, 768);
+
             // set focus to the "Women" menu item
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.LinkText("Women")));
@@ -108,7 +127,30 @@ namespace NUTests
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("color_2")));
             obj.Click();
 
+            // set details and add item to cart
+            SetDetailsAndAddToCart();
+
+            // check number of items in Cart
+            Assert.That(CheckCart(), Is.EqualTo("1"));
+
+            // remove selected item from cart
+            EmptyAjaxCart();
+
+        } // Choose1024x768
+
+
+
+        internal void SetDetailsAndAddToCart()
+        {
+            // select a size
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            var obj = wait.Until(ExpectedConditions.ElementExists(By.Id("group_1")));
+            var dd = new SelectElement(obj);
+            dd.SelectByText("L");
+
             // hit the "Add to Cart" button
+            obj = driver.FindElement(By.Name("Submit"));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("Submit")));
             obj.Click();
@@ -118,15 +160,29 @@ namespace NUTests
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[@title='Continue shopping']")));
             obj.Click();
 
-            // check number of items in Cart
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//*[starts-with(@class,'ajax_cart_quantity')]")));
-            Assert.That(obj.Text.ToString(), Is.EqualTo("1"));
+        } // DetailsAndAddTocart
 
-            // displaying Ajax Cart
+        
+
+        internal string CheckCart()
+        {
+            // get number of items in Cart
+            var obj = driver.FindElement(By.XPath(".//*[starts-with(@class,'ajax_cart_quantity')]"));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//*[starts-with(@class,'ajax_cart_quantity')]")));
+            return (obj.Text);
+
+        } // CheckCart
+
+
+
+        internal void EmptyAjaxCart()
+        {
+            // displaying Ajax Cart - a "mouseover" event is expected here
             var todo = new Actions(driver);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//a[starts-with(@title,'View my shopping cart')]")));
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            var obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//a[starts-with(@title,'View my shopping cart')]")));
             todo.MoveToElement(obj).Perform();
 
             // removing the item from the Cart
@@ -138,16 +194,50 @@ namespace NUTests
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//*[@class='ajax_cart_no_product']")));
 
-        } // ShopOneItem
+        } // EmptyAjaxCart()
 
 
 
         [Test]
-        [Order(2)]
-        public void FF_ShopTwoItems()
+        [Order(1)]
+        public void FF_Choose1280x720()
         {
+            driver.Manage().Window.Size = new System.Drawing.Size(1280, 720);
 
-        } // ShopTwoItems
+            // hit the "Dresses" menu
+            var todo = new Actions(driver);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            var obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//ul[starts-with(@class,'sf-menu')]/li[2]")));
+            todo.MoveToElement(obj).Perform();
+            obj.Click();
+
+            // select "In Stock" option for result list
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            obj = wait.Until(ExpectedConditions.ElementExists(By.Id("selectProductSort")));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
+            var dd = new SelectElement(obj);
+            dd.SelectByText("In stock");
+
+            // position on an item (it should display a gadget)
+            todo = new Actions(driver);
+            var objs = driver.FindElements(By.XPath(".//div[@class='product-container']"));
+            todo.MoveToElement(obj).Perform();
+
+            // hit the "More" button displayed on the gadget
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//a[contains(@class,'lnk_view')]")));
+            obj.Click();
+
+            // set details and add item to cart
+            SetDetailsAndAddToCart();
+
+            // check number of items in Cart
+            Assert.That(CheckCart(), Is.EqualTo("1"));
+
+            // remove selected item from cart
+            EmptyAjaxCart();
+
+        } // Choose1280x720
 
 
 

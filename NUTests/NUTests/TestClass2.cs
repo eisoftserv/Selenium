@@ -131,7 +131,6 @@ namespace NUTests
             obj = driver.FindElement(By.XPath(".//select[@name='adults' and contains(@class,'selectx')]"));
             var dd = new SelectElement(obj);
             dd.SelectByText("1");
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.Id("preloader")));
