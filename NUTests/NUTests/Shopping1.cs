@@ -27,8 +27,8 @@ namespace NUTests
         {
 
             string loginUrl = "http://automationpractice.com/";
-            string user = "ellailona2016@gmail.com";
-            string password = "maricosan";
+            string user = "test@gmail.com";
+            string password = "test";
 
             // initializing driver and JavaScript executor
             driver = new FirefoxDriver();
@@ -42,6 +42,9 @@ namespace NUTests
             // "sign in" workflow
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
             var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName("login")));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName("login")));
             obj.Click();
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
@@ -58,8 +61,6 @@ namespace NUTests
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("passwd"), password));
 
-            obj = driver.FindElement(By.Id("SubmitLogin"));
-            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("SubmitLogin")));
             obj.Click();
@@ -293,6 +294,46 @@ namespace NUTests
         {
             driver.Manage().Window.Size = new System.Drawing.Size(480, 800);
 
+            // using the acordion widget to open Categories > Women > Catalog
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[starts-with(@class,'cat-title')]")));
+            obj.Click();
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//a[@title='Women' and text()='Women']")));
+            obj.Click();
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("layered_block_left")));
+            obj.Click();
+            SimpleWait(2);
+
+            // checking Category "Tops"
+            obj = driver.FindElement(By.Id("layered_category_4"));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+            obj.Click();
+            SimpleWait(5);
+
+            // checking size "L"
+            obj = driver.FindElement(By.Id("layered_id_attribute_group_3"));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+            obj.Click();
+            SimpleWait(5);
+
+            // add to cart the first item
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//a[contains(@class,'ajax_add_to_cart_button')]")));
+            obj.Click();
+
+            // close the light-box by hitting "Continue Shopping"
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[@title='Continue shopping']")));
+            obj.Click();
+            SimpleWait(2);
+
+            // check number of items in Cart
+            Assert.That(CheckCart(), Is.EqualTo("1"));
+            // remove selected item from cart
+            EmptyAjaxCart();
+
         } // Choose480x800
 
 
@@ -302,4 +343,3 @@ namespace NUTests
 
 
 } // namespace
-
