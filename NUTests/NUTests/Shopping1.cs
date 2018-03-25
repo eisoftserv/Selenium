@@ -18,7 +18,7 @@ namespace NUTests
     {
         internal FirefoxDriver driver = null;
         internal IJavaScriptExecutor jse = null;
-        
+
 
 
         [OneTimeSetUp]
@@ -27,8 +27,8 @@ namespace NUTests
         {
 
             string loginUrl = "http://automationpractice.com/";
-            string user = "test@gmail.com";
-            string password = "test";
+            string user = "ellailona2016@gmail.com";
+            string password = "maricosan";
 
             // initializing driver and JavaScript executor
             driver = new FirefoxDriver();
@@ -59,7 +59,7 @@ namespace NUTests
             wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("passwd"), password));
 
             obj = driver.FindElement(By.Id("SubmitLogin"));
-            jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("SubmitLogin")));
             obj.Click();
@@ -90,7 +90,7 @@ namespace NUTests
 
 
         [SetUp]
-        [Description("scrolling the NAV ")]
+        [Description("navigating to the landing page")]
         public void FF_GoToLandingPage()
         {
             string startUrl = "http://automationpractice.com/index.php";
@@ -105,8 +105,10 @@ namespace NUTests
 
         [Test]
         [Order(2)]
+        [Description("ipad-alike UI")]
         public void FF_Choose1024x768()
         {
+            // select tablet resolution
             driver.Manage().Window.Size = new System.Drawing.Size(1024, 768);
 
             // set focus to the "Women" menu item
@@ -129,10 +131,8 @@ namespace NUTests
 
             // set details and add item to cart
             SetDetailsAndAddToCart();
-
             // check number of items in Cart
             Assert.That(CheckCart(), Is.EqualTo("1"));
-
             // remove selected item from cart
             EmptyAjaxCart();
 
@@ -150,7 +150,7 @@ namespace NUTests
 
             // hit the "Add to Cart" button
             obj = driver.FindElement(By.Name("Submit"));
-            jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("Submit")));
             obj.Click();
@@ -162,13 +162,13 @@ namespace NUTests
 
         } // DetailsAndAddTocart
 
-        
+
 
         internal string CheckCart()
         {
             // get number of items in Cart
             var obj = driver.FindElement(By.XPath(".//*[starts-with(@class,'ajax_cart_quantity')]"));
-            jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//*[starts-with(@class,'ajax_cart_quantity')]")));
             return (obj.Text);
@@ -198,8 +198,23 @@ namespace NUTests
 
 
 
+        internal void SimpleWait(int nSeconds)
+        {
+            // emulating timer by waiting for inexistent DOM node
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(nSeconds));
+            try
+            {
+                wait.Until(ExpectedConditions.ElementExists(By.Id("tytyty")));
+            }
+            catch { }
+
+        } // SimpleWait
+
+
+
         [Test]
-        [Order(1)]
+        [Order(3)]
+        [Description("desktop-alike UI")]
         public void FF_Choose1280x720()
         {
             driver.Manage().Window.Size = new System.Drawing.Size(1280, 720);
@@ -214,13 +229,45 @@ namespace NUTests
             // select "In Stock" option for result list
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             obj = wait.Until(ExpectedConditions.ElementExists(By.Id("selectProductSort")));
-            jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             var dd = new SelectElement(obj);
             dd.SelectByText("In stock");
 
+            // "Price" slider - getting the position of the left handle
+            int nLeft, nRight, nOffset;
+            obj = driver.FindElement(By.XPath(".//div[@id='layered_price_slider']/a[1]"));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@id='layered_price_slider']/a[1]")));
+            nLeft = obj.Location.X;
+
+            // getting the position of the right handle
+            obj = driver.FindElement(By.XPath(".//div[@id='layered_price_slider']/a[2]"));
+            nRight = obj.Location.X;
+
+            // dragging the right handle to 75%
+            nOffset = (int)((nRight - nLeft) * 0.25);
+            var oLoad = driver.FindElement(By.Id("layered_ajax_loader"));
+            todo = new Actions(driver);
+            todo.DragAndDropToOffset(obj, -nOffset, 0).Perform();
+            // waiting until the new item list gets loaded
+            SimpleWait(10);
+
+            // dragging the left handle to 30%
+            nOffset = (int)((nRight - nLeft) * 0.3);
+            oLoad = driver.FindElement(By.Id("layered_ajax_loader"));
+            obj = driver.FindElement(By.XPath(".//div[@id='layered_price_slider']/a[1]"));
+            todo = new Actions(driver);
+            todo.DragAndDropToOffset(obj, nOffset, 0).Perform();
+            // waiting until the new item list gets loaded
+            SimpleWait(10);
+
             // position on an item (it should display a gadget)
             todo = new Actions(driver);
-            var objs = driver.FindElements(By.XPath(".//div[@class='product-container']"));
+            obj = driver.FindElement(By.XPath(".//div[@class='product-container']"));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(7));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@class='product-container']")));
             todo.MoveToElement(obj).Perform();
 
             // hit the "More" button displayed on the gadget
@@ -230,14 +277,23 @@ namespace NUTests
 
             // set details and add item to cart
             SetDetailsAndAddToCart();
-
             // check number of items in Cart
             Assert.That(CheckCart(), Is.EqualTo("1"));
-
             // remove selected item from cart
             EmptyAjaxCart();
 
         } // Choose1280x720
+
+
+
+        [Test]
+        [Order(1)]
+        [Description("smartphone-alike UI")]
+        public void FF_Choose480x800()
+        {
+            driver.Manage().Window.Size = new System.Drawing.Size(480, 800);
+
+        } // Choose480x800
 
 
 
@@ -246,3 +302,4 @@ namespace NUTests
 
 
 } // namespace
+
