@@ -27,8 +27,8 @@ namespace NUTests
         {
 
             string loginUrl = "http://automationpractice.com/";
-            string user = "ellailona2016@gmail.com";
-            string password = "maricosan";
+            string user = "test@gmail.com";
+            string password = "test";
 
             // initializing driver and JavaScript executor
             driver = new FirefoxDriver();
