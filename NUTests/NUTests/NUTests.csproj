@@ -50,6 +50,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AmazonPublic.cs" />
     <Compile Include="Shopping1.cs" />
     <Compile Include="TestClass1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
