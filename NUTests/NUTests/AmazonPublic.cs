@@ -73,33 +73,60 @@ namespace NUTests
             todo = new Actions(driver);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@id='aws-nav-flyout-2-products']/div/div[2]/a")));
-            todo.MoveToElement(obj).Click().Perform();
+            todo.MoveToElement(obj).Perform();
+            todo = new Actions(driver);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@id='aws-nav-flyout-3-storage']/div/div[1]/a")));
-            obj.Click();
-            SimpleWait(5);
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@id='aws-nav-flyout-3-storage']/div/div/a")));
+            todo.MoveToElement(obj).Click().Perform();
 
             // expecting a page with specific "Amazon S3" link
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//a[@class='lb-btn-a-primary']")));
+            wait.Until(ExpectedConditions.ElementExists(By.Id("Get_started_with_Amazon_S3")));
+            obj = driver.FindElement(By.XPath(".//div[starts-with(@class,'lb-tiny-iblock')]"));
             jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
 
             // start video
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName("vjs-big-play-button")));
             obj.Click();
-            // wait 5 seconds
-            SimpleWait(5);
+
+            // wait 5 seconds while the video is playing
+            SimpleWait(5.0);
 
             // go to video control bar
             todo = new Actions(driver);
-            obj = driver.FindElement(By.ClassName("vjs-control-bar"));
+            obj = driver.FindElement(By.XPath(".//div[starts-with(@class,'vjs-control-bar')]"));
             todo.MoveToElement(obj).Perform();
+
+            // go to the volume control icon
+            todo = new Actions(driver);
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//div[starts-with(@class,'vjs-volume-panel')]")));
+            todo.MoveToElement(obj).Perform();
+
+            // go to the volume control bar and hit at 40% of its width
+            todo = new Actions(driver);
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//div[starts-with(@class,'vjs-volume-bar')]")));
+            int offsetX = (int)(obj.Size.Width * 0.1);
+            // volume is set to +50% -10%, so to 40%,
+            // because the "Origo" of the current object is its middle zone
+            todo.MoveToElement(obj).MoveByOffset(-offsetX, 0).Click().Perform();
+
+            // wait 8 seconds while the video is playing
+            SimpleWait(8.0);
+
+            // go to video control bar
+            todo = new Actions(driver);
+            obj = driver.FindElement(By.XPath(".//div[starts-with(@class,'vjs-control-bar')]"));
+            todo.MoveToElement(obj).Perform();
+
             // pause video
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//button[@title='Pause']")));
             obj.Click();
-            // check if paused
+
+            // check if it's paused
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//button[@title='Play']")));
 
@@ -107,7 +134,7 @@ namespace NUTests
 
 
 
-        internal void SimpleWait(int nSeconds)
+        internal void SimpleWait(double nSeconds)
         {
             // emulating timer by waiting for inexistent DOM node
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(nSeconds));
