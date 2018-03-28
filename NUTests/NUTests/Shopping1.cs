@@ -4,6 +4,7 @@ using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Threading.Tasks;
 
 namespace NUTests
 {
@@ -195,17 +196,15 @@ namespace NUTests
 
 
 
-        internal void SimpleWait(int nSeconds)
+        public void JustWait(int millisec)
         {
-            // emulating timer by waiting for inexistent DOM node
-            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(nSeconds));
-            try
-            {
-                wait.Until(ExpectedConditions.ElementExists(By.Id("tytyty")));
-            }
-            catch { }
+            var tsk = Task.Run(async () => {
+                await Task.Delay(millisec);
+            });
+            tsk.Wait();
+            tsk.Dispose();
 
-        } // SimpleWait
+        } // JustWait
 
 
 
@@ -248,7 +247,7 @@ namespace NUTests
             todo = new Actions(driver);
             todo.DragAndDropToOffset(obj, -nOffset, 0).Perform();
             // waiting until the new item list gets loaded
-            SimpleWait(10);
+            JustWait(10000);
 
             // dragging the left handle to 30%
             nOffset = (int)((nRight - nLeft) * 0.3);
@@ -257,7 +256,7 @@ namespace NUTests
             todo = new Actions(driver);
             todo.DragAndDropToOffset(obj, nOffset, 0).Perform();
             // waiting until the new item list gets loaded
-            SimpleWait(10);
+            JustWait(10000);
 
             // position on an item (it should display a gadget)
             todo = new Actions(driver);
@@ -300,19 +299,19 @@ namespace NUTests
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("layered_block_left")));
             obj.Click();
-            SimpleWait(2);
+            JustWait(2000);
 
             // checking Category "Tops"
             obj = driver.FindElement(By.Id("layered_category_4"));
             jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             obj.Click();
-            SimpleWait(5);
+            JustWait(5000);
 
             // checking size "L"
             obj = driver.FindElement(By.Id("layered_id_attribute_group_3"));
             jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             obj.Click();
-            SimpleWait(5);
+            JustWait(5000);
 
             // add to cart the first item
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
@@ -323,7 +322,7 @@ namespace NUTests
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[@title='Continue shopping']")));
             obj.Click();
-            SimpleWait(2);
+            JustWait(2000);
 
             // check number of items in Cart
             Assert.That(CheckCart(), Is.EqualTo("1"));

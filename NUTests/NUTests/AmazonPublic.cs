@@ -91,7 +91,7 @@ namespace NUTests
             obj.Click();
 
             // wait 5 seconds while the video is playing
-            SimpleWait(5.0);
+            JustWait(5000);
 
             // go to video control bar
             todo = new Actions(driver);
@@ -114,7 +114,7 @@ namespace NUTests
             todo.MoveToElement(obj).MoveByOffset(-offsetX, 0).Click().Perform();
 
             // wait 8 seconds while the video is playing
-            SimpleWait(8.0);
+            JustWait(8000);
 
             // go to video control bar
             todo = new Actions(driver);
@@ -134,18 +134,15 @@ namespace NUTests
 
 
 
-        internal void SimpleWait(double nSeconds)
+        public void JustWait(int millisec)
         {
-            // emulating timer by waiting for inexistent DOM node
-            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(nSeconds));
-            try
-            {
-                wait.Until(ExpectedConditions.ElementExists(By.Id("tytyty")));
-            }
-            catch { }
+            var tsk = Task.Run(async () => {
+                await Task.Delay(millisec);
+            });
+            tsk.Wait();
+            tsk.Dispose();
 
-        } // SimpleWait
-
+        } // JustWait
 
 
     } // class AmazonPublic
