@@ -24,14 +24,14 @@ namespace NUTests
         {
 
             string loginUrl = "http://automationpractice.com/";
-            string user = "test@gmail.com";
-            string password = "test";
+            string user = "ellailona2016@gmail.com";
+            string password = "";
 
             // initializing driver and JavaScript executor
             driver = new FirefoxDriver();
             jse = (IJavaScriptExecutor)driver;
-            // starting with the smallest screen area
-            driver.Manage().Window.Size = new System.Drawing.Size(1024, 720);
+            // starting with default screen area
+            driver.Manage().Window.Size = new System.Drawing.Size(1200, 720);
 
             // navigating to the landing page
             driver.Url = loginUrl;
@@ -330,6 +330,109 @@ namespace NUTests
             EmptyAjaxCart();
 
         } // Choose480x800
+
+
+
+        [Test]
+        [Order(4)]
+        [Description("Verify product name and price in More detail view")]
+        public void FF_VerifyMoreNamePrice()
+        {
+            // go to the "Dresses" menu
+            var todo = new Actions(driver);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            var obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//ul[starts-with(@class,'sf-menu')]/li[2]")));
+            todo.MoveToElement(obj).Click().Perform();
+            // waiting until products are loaded
+            JustWait(5000);
+
+            obj = driver.FindElement(By.XPath(".//div[@class='product-container']"));
+            todo = new Actions(driver);
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+
+            // get the name and price of the item
+            obj = driver.FindElement(By.XPath(".//div[starts-with(@class,'right-block')]/h5/a"));
+            string name1 = obj.Text;
+            obj = driver.FindElement(By.XPath(".//div[starts-with(@class,'right-block')]/div/span"));
+            string price1 = obj.Text;
+
+            // go to item and hit the "More" button
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@class='product-container']")));
+            todo.MoveToElement(obj).Perform();
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//a[contains(@class,'lnk_view')]")));
+            obj.Click();
+
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[starts-with(@class,'pb-center-column')]/h1")));
+            string name2 = obj.Text;
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("our_price_display")));
+            string price2 = obj.Text;
+
+            bool ok = ((name1 == name2) && (price1 == price2));
+            Assert.That(ok, Is.True);
+
+        } // VerifyMoreNamePrice
+
+
+
+        [Test]
+        [Order(5)]
+        [Description("Verify product name and price in Quick detail view")]
+        public void FF_VerifyQuickNamePrice()
+        {
+            // go to the "Dresses" menu
+            var todo = new Actions(driver);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            var obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//ul[starts-with(@class,'sf-menu')]/li[2]")));
+            todo.MoveToElement(obj).Click().Perform();
+            // waiting until products are loaded
+            JustWait(5000);
+
+            obj = driver.FindElement(By.XPath(".//div[@class='product-container']"));
+            todo = new Actions(driver);
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+
+            // get the name and price of the item
+            obj = driver.FindElement(By.XPath(".//div[starts-with(@class,'right-block')]/h5/a"));
+            string name1 = obj.Text;
+            obj = driver.FindElement(By.XPath(".//div[starts-with(@class,'right-block')]/div/span"));
+            string price1 = obj.Text;
+
+            // go to item and hit the "Quick View" link
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@class='product-container']")));
+            todo.MoveToElement(obj).Perform();
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//a[@class='quick-view']")));
+            obj.Click();
+
+            // "Quick View" is an IFRAME, we need to step into
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//iframe[starts-with(@id,'fancybox')]")));
+            string frameid = obj.GetAttribute("id");
+            driver.SwitchTo().Frame(frameid);
+
+            // get name and price info
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[starts-with(@class,'pb-center-column')]/h1")));
+            string name2 = obj.Text;
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("our_price_display")));
+            string price2 = obj.Text;
+
+            // back into the page
+            driver.SwitchTo().DefaultContent();
+            // close quick view
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//a[starts-with(@class,'fancybox-item') and contains(@class,'fancybox-close')]")));
+
+            bool ok = ((name1 == name2) && (price1 == price2));
+            Assert.That(ok, Is.True);
+
+        } // VerifyQuickNamePrice
 
 
 
