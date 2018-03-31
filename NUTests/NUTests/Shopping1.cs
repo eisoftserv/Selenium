@@ -103,7 +103,7 @@ namespace NUTests
 
         [Test]
         [Description("ipad-alike UI")]
-        [Order(2)]
+        [Order(12)]
         public void FF_Choose1024x768()
         {
             // select tablet resolution
@@ -210,7 +210,7 @@ namespace NUTests
 
         [Test]
         [Description("desktop-alike UI")]
-        [Order(3)]
+        [Order(13)]
         public void FF_Choose1280x720()
         {
             driver.Manage().Window.Size = new System.Drawing.Size(1280, 720);
@@ -284,7 +284,7 @@ namespace NUTests
 
         [Test]
         [Description("smartphone-alike UI")]
-        [Order(1)]
+        [Order(11)]
         public void FF_Choose480x800()
         {
             driver.Manage().Window.Size = new System.Drawing.Size(480, 800);
@@ -335,7 +335,7 @@ namespace NUTests
 
         [Test]
         [Description("Verify product name and price in More detail view")]
-        [Order(4)]
+        [Order(21)]
         public void FF_VerifyMoreNamePrice()
         {
             // go to the "Dresses" menu
@@ -380,7 +380,7 @@ namespace NUTests
 
         [Test]
         [Description("Verify product name and price in Quick detail view")]
-        [Order(5)]
+        [Order(22)]
         public void FF_VerifyQuickNamePrice()
         {
             // go to the "Dresses" menu
@@ -438,16 +438,14 @@ namespace NUTests
 
         [Test]
         [Description("Verify Add button in Cart")]
-        [Order(6)]
+        [Order(23)]
         public void FF_AddButtonCart()
         {
-            double quantity = 1.0;
-
             // add a T-Shirt to Cart
             double price = PutProductInCart(false);
 
             // hit "+" in Classic Cart, bring new quantity and value
-            double[] resultCC = StepClassicCart(true);
+            double[] resultCC = StepClassicCart("+");
 
             // bring Ajax Cart quantity and value
             double[] resultAC = GetAjaxCart();
@@ -456,16 +454,12 @@ namespace NUTests
             EmptyAjaxCart();
 
             // check Classic Cart
-            bool ok = (2 * quantity == resultCC[0]);
-            Assert.That(ok, Is.True);
-            ok = (2 * price == resultCC[1]);
-            Assert.That(ok, Is.True);
+            Assert.That((2 == resultCC[0]), Is.True);
+            Assert.That((2 * price == resultCC[1]), Is.True);
 
             //check Ajax Cart
-            ok = (2 * quantity == resultAC[0]);
-            Assert.That(ok, Is.True);
-            ok = (2 * price == resultAC[1]);
-            Assert.That(ok, Is.True);
+            Assert.That((2 == resultAC[0]), Is.True);
+            Assert.That((2 * price == resultAC[1]), Is.True);
 
         } // AddButtonInCart
 
@@ -528,7 +522,7 @@ namespace NUTests
             if (twoProducts == true)
             {
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName(".//a[contains(@class,'button-plus')]")));
+                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//a[contains(@class,'product_quantity_up')]")));
                 obj.Click();
             }
 
@@ -548,7 +542,7 @@ namespace NUTests
 
 
 
-        internal double[] StepClassicCart(bool upwards)
+        internal double[] StepClassicCart(string upwards)
         {
             double[] numbers = { 0.0, 0.0 };
             // open classic cart
@@ -562,17 +556,25 @@ namespace NUTests
             obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//td[@class='cart_product']")));
             jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
 
-            string path = (upwards ? ".//a[starts-with(@id,'cart_quantity_up')]" : ".//a[starts-with(@id,'cart_quantity_down')]");
-
+            string path = ((upwards =="+") ? ".//a[starts-with(@id,'cart_quantity_up')]" : ".//a[starts-with(@id,'cart_quantity_down')]");
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(path)));
             obj.Click();
 
+            // check cart empty condition when needed
+            if (upwards == ".")
+            {
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//*[contains(@class,'alert-warning')]")));
+                return numbers;
+            }
+            
+            string newQuantity = (upwards == "+") ? "2" : "1";
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.XPath(".//input[starts-with(@name,'quantity_') and @type='hidden']"), "2"));
+            wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.XPath(".//input[starts-with(@name,'quantity_') and @type='hidden']"), newQuantity));
 
             // get quantity
-            obj = driver.FindElement(By.XPath(".//input[starts-with(@name,'quantity_') and @type='hidden']"));
+            obj = driver.FindElement(By.XPath(".//input[starts-with(@class,'cart_quantity_input')]"));
             numbers[0] = MyNumber(obj.GetAttribute("value"));
 
             // get total value per product
@@ -605,18 +607,55 @@ namespace NUTests
 
         [Test]
         [Description("Verify Subtract button in Cart")]
-        [Order(7)]
+        [Order(24)]
         public void FF_SubtractButtonCart()
         {
+            // add two T-Shirts to Cart
+            double price = PutProductInCart(true);
+
+            // hit "-" in Classic Cart, bring new quantity and value
+            double[] resultCC = StepClassicCart("-");
+
+            // bring Ajax Cart quantity and value
+            double[] resultAC = GetAjaxCart();
+
+            // empty the Cart
+            EmptyAjaxCart();
+
+            // check Classic Cart
+            Assert.That((1 == resultCC[0]), Is.True);
+            Assert.That((price == resultCC[1]), Is.True);
+
+            //check Ajax Cart
+            Assert.That((1 == resultAC[0]), Is.True);
+            Assert.That((price == resultAC[1]), Is.True);
+
         } // SubtractButtonInCart
 
 
 
         [Test]
         [Description("Verify empty Cart by Subtract button")]
-        [Order(8)]
+        [Order(25)]
         public void FF_EmptyBySubtractButtonCart()
         {
+            // add a T-Shirt to Cart
+            PutProductInCart(false);
+
+            // hit "-" in Classic Cart, bring new quantity and value
+            double[] resultCC = StepClassicCart(".");
+             
+            // bring Ajax Cart quantity and value
+            double[] resultAC = GetAjaxCart();
+
+            // check Classic Cart
+            Assert.That((0 == resultCC[0]), Is.True);
+            Assert.That((0 == resultCC[1]), Is.True);
+
+            //check Ajax Cart
+            Assert.That((0 == resultAC[0]), Is.True);
+            Assert.That((0 == resultAC[1]), Is.True);
+
         } // EmptyBySubtractButtonCart
 
 
