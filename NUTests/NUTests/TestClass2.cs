@@ -81,8 +81,8 @@ namespace NUTests
 
 
         [Test]
-        [Order(1)]
         [Description("booking a tour of Dubai")]
+        [Order(1)]
         public void FF_BookingTour()
         {
             var jse = (IJavaScriptExecutor)driver;
