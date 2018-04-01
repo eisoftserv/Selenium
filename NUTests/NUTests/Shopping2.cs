@@ -337,7 +337,7 @@ namespace NUTests
 
 
         [Test]
-        [Description("Checkout and verify Order History")]
+        [Description("Checkout and verify latest order in history")]
         [Order(26)]
         public void FF_CheckoutAndVerifyHistory()
         {
@@ -354,7 +354,70 @@ namespace NUTests
             // check totals
             Assert.That((total1 == total2), Is.True);
 
-        } // EmptyBySubtractButtonCart
+        } // CheckoutAndVerifyHistory
+
+
+
+        [Test]
+        [Description("Checkout and verify latest order in history")]
+        [Order(27)]
+        public void FF_CheckoutWithoutTerms()
+        {
+            // add products in cart
+            PutProductInCart(true);
+
+            // do first part of checkout, get command's Total
+            Checkout123();
+
+            // hit checkout button to continue
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(6));
+            var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("processCarrier")));
+            obj.Click();
+
+            // verify presence of Alert
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(7));
+            obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("//*[@class='fancybox-error']")));
+            Assert.That((obj.Text == "You must agree to the terms of service before continuing."), Is.True);
+
+            // try to pay
+            Assert.That(TryToPay(), Is.False);
+
+            // close alert
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(8));
+            obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("//a[contains(@class,'fancybox-close')]")));
+            obj.Click();
+
+            // again: try to pay
+            Assert.That(TryToPay(), Is.False);
+
+        } // CheckoutWithoutTerms
+
+
+
+        internal bool TryToPay()
+        {
+            bool ok = false;
+
+            try
+            {
+                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(3));
+                var obj = wait.Until(ExpectedConditions.ElementExists(By.XPath("//a[@class='bankwire']")));
+                ok = true;
+            }
+            catch
+            {
+                try
+                {
+                    var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(3));
+                    var obj = wait.Until(ExpectedConditions.ElementExists(By.XPath("//a[@class='cheque']")));
+                    ok = true;
+                }
+                catch { }
+            }
+
+            return ok;
+
+        } // TryToPay
 
 
 
