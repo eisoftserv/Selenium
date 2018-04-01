@@ -336,6 +336,159 @@ namespace NUTests
 
 
 
+        [Test]
+        [Description("Checkout and verify Order History")]
+        [Order(26)]
+        public void FF_CheckoutAndVerifyHistory()
+        {
+            // add 3 products in cart
+            PutMoreProductsInCart(3);
+
+            // do first part of checkout, get command's Total
+            double total1 = Checkout123();
+
+            // do second part of checkout, get command's history: Id & Total
+            string[] history = Checkout456();
+            double total2 = MyMoney(history[1]);
+
+            // check totals
+            Assert.That((total1 == total2), Is.True);
+
+        } // EmptyBySubtractButtonCart
+
+
+
+        internal void PutMoreProductsInCart(int howmany)
+        {
+            // go to the "Dresses" menu
+            var todo = new Actions(driver);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            var obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//ul[starts-with(@class,'sf-menu')]/li[2]")));
+            todo.MoveToElement(obj).Click().Perform();
+            // waiting until products are loaded
+            JustWait(5000);
+
+            // collect product containers and "Add to cart" buttons
+            var objs = driver.FindElements(By.XPath("//div[@class='product-container']"));
+            var btns = driver.FindElements(By.XPath("//a[contains(@class,'ajax_add_to_cart_button')]"));
+            int nCount = Math.Min(howmany, objs.Count);
+
+            for (int i=0; i<nCount; i++)
+            {
+                //var btns = driver.FindElements(By.XPath(".//div[@class='right-block']/div[2]/a"));
+                // move to the next product
+                jse.ExecuteScript("arguments[0].scrollIntoView(true);", objs[i]);
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(6));
+                wait.Until(ExpectedConditions.ElementToBeClickable(objs[i]));
+                todo = new Actions(driver);
+                todo.MoveToElement(objs[i]).Perform();
+                // hit "Add to cart" button
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(7));
+                wait.Until(ExpectedConditions.ElementToBeClickable(btns[i]));
+                btns[i].Click();
+                // hit "Continue shopping" button
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(6));
+                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[@title='Continue shopping']")));
+                obj.Click();
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//*[@title='Continue shopping']")));
+            } // end for
+
+        } // PutMoreProductsInCart
+
+
+
+        internal double Checkout123()
+        {
+            // open classic cart
+            var obj = driver.FindElement(By.XPath(".//a[@title='View my shopping cart']"));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(ExpectedConditions.ElementToBeClickable(obj));
+            obj.Click();
+
+            // getting the command's total
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementExists(By.Id("total_price")));
+            double total = MyMoney(obj.Text);
+
+            // hit button to continue
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//a[contains(@class,'standard-checkout')]")));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(ExpectedConditions.ElementToBeClickable(obj));
+            obj.Click();
+
+            // hit button to continue
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementExists(By.Name("processAddress")));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(ExpectedConditions.ElementToBeClickable(obj));
+            obj.Click();
+
+            return total;
+
+        } // Checkout123
+
+
+
+        internal string[] Checkout456()
+        {
+            // check terms and conditions
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            var obj = wait.Until(ExpectedConditions.ElementExists(By.Id("uniform-cgv")));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(ExpectedConditions.ElementIsVisible(By.Id("uniform-cgv")));
+            obj.Click();
+
+            // hit button to continue
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("processCarrier")));
+            obj.Click();
+
+            // select payment method
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//a[@class='cheque']")));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(8));
+            wait.Until(ExpectedConditions.ElementToBeClickable(obj));
+            obj.Click();
+
+            // confirm order
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//button[contains(@class,'button-medium')]")));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(ExpectedConditions.ElementToBeClickable(obj));
+            obj.Click();
+
+            // go to instant order history
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(6));
+            obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//a[starts-with(@class,'button-exclusive')]")));
+            jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(6));
+            wait.Until(ExpectedConditions.ElementToBeClickable(obj));
+            obj.Click();
+
+            string[] result = { "", "" };
+            // get order id
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("//a[@class='color-myaccount']")));
+            result[0] = obj.Text;
+            // get total
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath("//*[@class='history_price']/span")));
+            result[1] = obj.Text;
+
+            return result;
+
+        } // Checkout456
+
+
+
     } // class
 
 
