@@ -40,7 +40,7 @@ namespace NUTests
             var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName("login")));
             jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName("login")));
+            wait.Until(ExpectedConditions.ElementToBeClickable(obj));
             obj.Click();
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
@@ -91,7 +91,6 @@ namespace NUTests
         public void FF_GoToLandingPage()
         {
             string startUrl = "http://automationpractice.com/index.php";
-
             driver.Navigate().GoToUrl(startUrl);
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("search_query_top")));
@@ -112,18 +111,20 @@ namespace NUTests
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.LinkText("Women")));
             jse.ExecuteScript("arguments[0].focus()", obj);
-
             // hit the "Tops" category
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.LinkText("Tops")));
             obj.Click();
+            // wait for Ajax process
+            StaticWait(10000);
+            JustWait(10000);
 
             // hit the "blue" square (I want a blue t-shirt)
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementExists(By.Id("color_2")));
             jse.ExecuteScript("arguments[0].focus()", obj);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("color_2")));
+            wait.Until(ExpectedConditions.ElementToBeClickable(obj));
             obj.Click();
 
             // set details and add item to cart
@@ -149,7 +150,7 @@ namespace NUTests
             obj = driver.FindElement(By.Name("Submit"));
             jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("Submit")));
+            wait.Until(ExpectedConditions.ElementToBeClickable(obj));
             obj.Click();
 
             // close the light-box by hitting "Continue shopping"
@@ -195,15 +196,32 @@ namespace NUTests
 
 
 
-        public void JustWait(int millisec)
+        public bool JustWait(int millisec)
         {
-            var tsk = Task.Run(async () => {
+            // check if jQuery Ajax is not running and document is completely loaded
+            var wait = new WebDriverWait(driver, TimeSpan.FromMilliseconds(millisec));
+            bool ok = wait.Until( driver => {
+                return (bool)jse.ExecuteScript("return (jQuery.active==0 && document.readyState=='complete');");
+            });
+
+            return ok;
+
+        } // JustWait
+
+
+
+        internal void StaticWait(int millisec)
+        {
+            // waiting on the foreground thread (UI) until timer stops on a threadpool thread
+            // this is useful solely to wait for a job running on background threads (Ajax or WebSockets)
+            var tsk = Task.Run(async () =>
+            {
                 await Task.Delay(millisec);
             });
             tsk.Wait();
             tsk.Dispose();
 
-        } // JustWait
+        } //
 
 
 
@@ -220,6 +238,9 @@ namespace NUTests
             var obj = wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(".//ul[starts-with(@class,'sf-menu')]/li[2]")));
             todo.MoveToElement(obj).Perform();
             obj.Click();
+            // wait for Ajax process
+            StaticWait(10000);
+            JustWait(10000);
 
             // select "In Stock" option for result list
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
@@ -227,13 +248,15 @@ namespace NUTests
             jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             var dd = new SelectElement(obj);
             dd.SelectByText("In stock");
+            // wait for Ajax and/or UI refresh
+            Assert.That(JustWait(10000), Is.True);
 
             // "Price" slider - getting the position of the left handle
             int nLeft, nRight, nOffset;
             obj = driver.FindElement(By.XPath(".//div[@id='layered_price_slider']/a[1]"));
             jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@id='layered_price_slider']/a[1]")));
+            wait.Until(ExpectedConditions.ElementToBeClickable(obj));
             nLeft = obj.Location.X;
 
             // getting the position of the right handle
@@ -245,8 +268,9 @@ namespace NUTests
             var oLoad = driver.FindElement(By.Id("layered_ajax_loader"));
             todo = new Actions(driver);
             todo.DragAndDropToOffset(obj, -nOffset, 0).Perform();
+
             // waiting until the new item list gets loaded
-            JustWait(10000);
+            Assert.That(JustWait(10000), Is.True);
 
             // dragging the left handle to 30%
             nOffset = (int)((nRight - nLeft) * 0.3);
@@ -254,8 +278,9 @@ namespace NUTests
             obj = driver.FindElement(By.XPath(".//div[@id='layered_price_slider']/a[1]"));
             todo = new Actions(driver);
             todo.DragAndDropToOffset(obj, nOffset, 0).Perform();
+
             // waiting until the new item list gets loaded
-            JustWait(10000);
+            Assert.That(JustWait(10000), Is.True);
 
             // position on an item (it should display a gadget)
             todo = new Actions(driver);
@@ -298,19 +323,22 @@ namespace NUTests
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("layered_block_left")));
             obj.Click();
-            JustWait(2000);
+
+            Assert.That(JustWait(10000), Is.True);
 
             // checking Category "Tops"
             obj = driver.FindElement(By.Id("layered_category_4"));
             jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             obj.Click();
-            JustWait(5000);
+            // wait for Ajax process
+            Assert.That(JustWait(10000), Is.True);
 
             // checking size "L"
             obj = driver.FindElement(By.Id("layered_id_attribute_group_3"));
             jse.ExecuteScript("arguments[0].scrollIntoView(true);", obj);
             obj.Click();
-            JustWait(5000);
+            // wait for Ajax process
+            Assert.That(JustWait(10000), Is.True);
 
             // add to cart the first item
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
@@ -321,7 +349,8 @@ namespace NUTests
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[@title='Continue shopping']")));
             obj.Click();
-            JustWait(2000);
+            // wait for Ajax process
+            Assert.That(JustWait(10000), Is.True);
 
             // check number of items in Cart
             Assert.That(CheckCart(), Is.EqualTo("1"));
