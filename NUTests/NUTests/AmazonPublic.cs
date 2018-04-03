@@ -91,7 +91,7 @@ namespace NUTests
             obj.Click();
 
             // wait 5 seconds while the video is playing
-            JustWait(5000);
+            WaitTimer(5000);
 
             // go to video control bar
             todo = new Actions(driver);
@@ -114,7 +114,7 @@ namespace NUTests
             todo.MoveToElement(obj).MoveByOffset(-offsetX, 0).Click().Perform();
 
             // wait 8 seconds while the video is playing
-            JustWait(8000);
+            WaitTimer(8000);
 
             // go to video control bar
             todo = new Actions(driver);
@@ -134,7 +134,7 @@ namespace NUTests
 
 
 
-        public void JustWait(int millisec)
+        private void WaitTimer(int millisec)
         {
             var tsk = Task.Run(async () => {
                 await Task.Delay(millisec);
@@ -142,7 +142,7 @@ namespace NUTests
             tsk.Wait();
             tsk.Dispose();
 
-        } // JustWait
+        } // WaitTimer
 
 
     } // class AmazonPublic

@@ -49,80 +49,6 @@ namespace NUTests
 
 
         [Test]
-        [Description("sending an email message to myself")]
-        public void FF_GoogleMail()
-        {
-            string address = "testuser@gmail.com";
-            string pwd = "testpassword";
-            string subject = "TestMessage";
-            string helloText = "Hello from Selenium!";
-
-            using (var driver = new FirefoxDriver())
-            {
-                driver.Manage().Window.Maximize();
-                driver.Url = "https://mail.google.com/";
-
-                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-                var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("identifier")));
-                obj.SendKeys(address);
-
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Next']")));
-                obj.Click();
-
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("password")));
-                obj.SendKeys(pwd);
-
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Next']")));
-                obj.Click();
-
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[text()='COMPOSE']")));
-                obj.Click();
-
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("to")));
-                obj.SendKeys(address);
-
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("subjectbox")));
-                obj.SendKeys(subject);
-
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//div[@role='textbox']")));
-                obj.SendKeys(helloText);
-
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[text()='Send']")));
-                obj.Click();
-
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
-                bool closed = wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.XPath(".//*[text()='Send']")));
-                Assert.That(closed, Is.True);
-
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//*[starts-with(@title,'Google Account')]")));
-                obj.Click();
-
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.LinkText("Sign out")));
-                obj.Click();
-
-                // normally the page for login password is displayed
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
-                obj = wait.Until(ExpectedConditions.ElementExists(By.Name("password")));
-
-                driver.Quit();
-
-            } // end using
-
-        } // GoogleMail
-
-
-
-        [Test]
         [Description("Searching on OLX")]
         public void FF_OlxSimpleSearch()
         {
@@ -146,7 +72,7 @@ namespace NUTests
                 obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//a[@title='Harta judetelor']")));
                 jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//a[@title='Harta judetelor']")));
+                wait.Until(ExpectedConditions.ElementToBeClickable(obj));
                 obj.Click();
 
                 // looking for the link of city Oradea
@@ -154,7 +80,7 @@ namespace NUTests
                 obj = wait.Until(ExpectedConditions.ElementExists(By.XPath(".//a[@title='Anunturi Oradea']")));
                 jse.ExecuteScript("arguments[0].scrollIntoView(true)", obj);
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(".//a[@title='Anunturi Oradea']")));
+                wait.Until(ExpectedConditions.ElementToBeClickable(obj));
                 obj.Click();
 
                 // looking for the Search autocomplete field
