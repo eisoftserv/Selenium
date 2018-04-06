@@ -5,6 +5,7 @@ using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace NUTests
 {
@@ -395,6 +396,28 @@ namespace NUTests
             Assert.That(TryToPay(), Is.False);
 
         } // CheckoutWithoutTerms
+
+
+
+        [Test]
+        [Description("Checkout and verify latest order in history")]
+        [Order(29)]
+        public void FF_RegexTest()
+        {
+
+            // hit checkout button to continue
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            var obj = wait.Until(ExpectedConditions.ElementExists(By.Id("block_contact_infos")));
+            string xxx = obj.GetAttribute("innerHTML");
+
+            var aaa = Regex.Matches(xxx, "Research [A-Z][a-z]{7}");
+            string bbb = "";
+            if (aaa.Count > 0) bbb = aaa[0].Value.Substring(8);
+            // bbb is "Triangle"
+
+            int iii = 0;
+
+        } // RegexTest
 
 
 
