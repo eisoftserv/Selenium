@@ -2,6 +2,7 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.Extensions;
 using OpenQA.Selenium.Support.PageObjects;
 using OpenQA.Selenium.Support.UI;
 using System;
@@ -9,81 +10,86 @@ using System.Threading.Tasks;
 
 namespace ShopWithPOM
 {
-    public class LoginFrag
+    public class LoginPart
     {
-        private IWebDriver driver;
+        IWebDriver driver;
+        IWebElement e_user => driver.FindElement(By.Id("email"));
+        IWebElement e_password => driver.FindElement(By.Id("passwd"));
+        IWebElement e_submit => driver.FindElement(By.Id("SubmitLogin"));
 
-        public LoginFrag(IWebDriver drv)
+        public LoginPart(IWebDriver drv)
         {
             this.driver = drv;
         } //
 
 
-        public bool DoLogin(string user, string password)
+        public bool Login(string user, string password)
         {
             bool ok = false;
 
-            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
-            var obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName("login")));
-            ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].scrollIntoView(true);", obj);
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(ExpectedConditions.ElementToBeClickable(obj));
-            obj.Click();
-
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("email")));
+            var obj = e_user;
+            driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(d => {
+                if (obj.Displayed && obj.Enabled) return true;
+                else return false;
+            });
             obj.Click();
             obj.SendKeys(user + Keys.Tab);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("email"), user));
+            wait.Until(d => {
+                if (obj.GetAttribute("value") == user) return true;
+                else return false;
+            });
 
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("passwd")));
+            obj = e_password;
             obj.Click();
             obj.SendKeys(password + Keys.Tab);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(ExpectedConditions.TextToBePresentInElementValue(By.Id("passwd"), password));
+            wait.Until(d => {
+                if (obj.GetAttribute("value") == password) return true;
+                else return false;
+            });
 
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            obj = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("SubmitLogin")));
+            obj = e_submit;
             obj.Click();
 
-            Helper.MyFluidWait(10000, driver);
-            if (driver.Title == "My Account - My Store") ok = true;
+            Helper.FluidWait(10000, driver);
+            if (driver.Title == "My account - My Store") ok = true;
 
             return ok;
 
-        } // DoLogin
+        } // Login
 
-    } // LoginFrag
+    } // LoginPart
 
 
 
-    public class DesktopMenuFrag
+    public class DesktopMenuPart
     {
 
-    } // DesktopMenuFrag
+    } // DesktopMenuPart
     
 
 
-    public class AjaxCartFrag
+    public class AjaxCartPart
     {
 
-    } // AjaxCartFrag
+    } // AjaxCartPart
 
 
 
-    public class ClassicCartFrag
+    public class ClassicCartPart
     {
 
-    } // ClassicCartFrag
+    } // ClassicCartPart
 
 
 
-    public class ProductListFrag
+    public class ProductListPart
     {
 
-    } // ProductListFrag
+    } // ProductListPart
 
     [TestFixture]
     [SingleThreaded]
@@ -99,17 +105,20 @@ namespace ShopWithPOM
         {
             string loginUrl = "http://automationpractice.com/index.php?controller=my-account";
             string user = "ellailona2016@gmail.com";
-            string password = "";
+            string password = "maricosan";
 
             // initializing driver
             driver = new FirefoxDriver();
-            // starting with default screen area
             driver.Manage().Window.Size = new System.Drawing.Size(1280, 720);
-            // navigating to the landing page
-            driver.Url = loginUrl;
 
-            var frag = new LoginFrag(driver);
-            Assert.That(frag.DoLogin(user, password), Is.True);
+            // navigating to the login page
+            driver.Url = loginUrl;
+            bool ok = Helper.FluidWait(10000, driver);
+            Assert.That(ok && (driver.Title == "Login - My Store"), Is.True);
+
+            // logging in
+            var part = new LoginPart(driver);
+            Assert.That(part.Login(user, password), Is.True);
 
         } // LoggingIn
 
@@ -120,10 +129,10 @@ namespace ShopWithPOM
         {
             string logoutUrl = "http://automationpractice.com/index.php?mylogout=";
             driver.Navigate().GoToUrl(logoutUrl);
-
-            Assert.That((driver.Title == "Login - My Store"), Is.True);
-
+            bool ok = Helper.FluidWait(10000, driver);
             driver.Quit();
+
+            Assert.That(ok && (driver.Title == "Login - My Store"), Is.True);
 
         } // LoggingOut
 
@@ -134,8 +143,8 @@ namespace ShopWithPOM
         {
             string startUrl = "http://automationpractice.com/index.php";
             driver.Navigate().GoToUrl(startUrl);
-
-            Assert.That((driver.Title == "My Store"), Is.True);
+            bool ok = Helper.FluidWait(10000, driver);
+            Assert.That(ok && (driver.Title == "My Store"), Is.True);
 
         } // GoToLandingPage
 
@@ -175,7 +184,7 @@ namespace ShopWithPOM
 
 
         // checking if jQuery Ajax is not running and document is completely loaded
-        public static bool MyFluidWait(int fluidMillisec, IWebDriver driver)
+        public static bool FluidWait(int fluidMillisec, IWebDriver driver)
         {
             bool ok = true;
             if (fluidMillisec > 0)
@@ -191,7 +200,7 @@ namespace ShopWithPOM
 
 
         // transforms money string to double
-        private static double MyMoney(string what)
+        private static double Money(string what)
         {
             double val;
             Double.TryParse(what.Substring(1), out val);
@@ -200,7 +209,7 @@ namespace ShopWithPOM
 
 
         // transforms string to double
-        private static double MyNumber(string what)
+        private static double Number(string what)
         {
             double val;
             Double.TryParse(what, out val);
