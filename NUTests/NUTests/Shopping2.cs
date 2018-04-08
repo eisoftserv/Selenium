@@ -411,11 +411,11 @@ namespace NUTests
             string xxx = obj.GetAttribute("innerHTML");
 
             var aaa = Regex.Matches(xxx, "Research [A-Z][a-z]{7}");
-            string bbb = "";
-            if (aaa.Count > 0) bbb = aaa[0].Value.Substring(8);
-            // bbb is "Triangle"
 
-            int iii = 0;
+            string bbb = "";
+            if (aaa.Count > 0) bbb = aaa[0].Value.Substring(9);
+            // bbb is "Triangle"
+            Assert.That(bbb == "Triangle", Is.True);
 
         } // RegexTest
 

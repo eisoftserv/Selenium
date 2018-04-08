@@ -7,6 +7,7 @@ using OpenQA.Selenium.Support.PageObjects;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ShopWithPOM
@@ -21,6 +22,13 @@ namespace ShopWithPOM
     public class Stock
     {
         public double Quantity { get; set; }
+        public double Value { get; set; }
+    } //
+
+
+    public class Order
+    {
+        public string Id { get; set; }
         public double Value { get; set; }
     } //
 
@@ -368,10 +376,49 @@ namespace ShopWithPOM
                 else return false;
             });
             btn.Click();
+            wait.Until(d => { if (!btn.Displayed) return true; else return false; });
 
             return price;
 
         } // PutProductInCart
+
+
+        public bool PutDifferentProductsInCart(int howmany)
+        {
+            var objs = e_products;
+            var btns = driver.FindElements(By.XPath("//a[contains(@class,'ajax_add_to_cart_button')]"));
+            int nCount = Math.Min(objs.Count, btns.Count);
+            nCount = Math.Min(howmany, nCount);
+            if (nCount < 1) return false;
+
+            for (int i = 0; i < nCount; i++)
+            {
+                // move to the current product
+                var obj = objs[i];
+                driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
+                var todo = new Actions(driver);
+                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
+                todo.MoveToElement(obj).Perform();
+
+                // hit the current "Add to cart" button
+                var btn = btns[i];
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(d => { if (btn.Displayed && btn.Enabled) return true; else return false; });
+                btn.Click();
+
+                // hit "Continue shopping" button
+                obj = e_continue;
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
+                obj.Click();
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(d => { if (!obj.Displayed) return true; else return false; });
+            } // end for
+
+            return true;
+
+        } //PutDifferentProductsInCart
 
     } // OfferPart
 
@@ -513,10 +560,7 @@ namespace ShopWithPOM
             // removing the item from the Cart
             obj = driver.FindElement(By.XPath("//a[starts-with(@class,'ajax_cart_block_remove_link')]"));
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             obj.Click();
 
             Helper.FluidWait(5000, driver);
@@ -531,7 +575,178 @@ namespace ShopWithPOM
 
         } // EmptyAjaxCart
 
+
+        public double CheckoutCart()
+        {
+            // open classic cart
+            var obj = e_open;
+            driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
+            obj.Click();
+
+            // getting the command's total
+            obj = driver.FindElement(By.Id("total_price"));
+            double total = Helper.Money(obj.Text);
+
+            // hit button to continue with the next page
+            obj = driver.FindElement(By.XPath("//a[contains(@class,'standard-checkout')]"));
+            driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
+            obj.Click();
+
+            Helper.FluidWait(10000, driver);
+
+            return total;
+
+        } // CheckoutCart
+
     } // CartPart
+
+
+    public class CheckoutAddressPart
+    {
+        IWebDriver driver = null;
+
+        public CheckoutAddressPart(IWebDriver drv) { driver = drv; }
+
+        public void NextPage()
+        {
+            // hit button to continue with the next page
+            var obj = driver.FindElement(By.Name("processAddress"));
+            driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
+            obj.Click();
+
+            Helper.FluidWait(10000, driver);
+
+        } // NextPage
+
+    } // CheckoutAddressPart
+
+
+    public class CheckoutCarrierPart
+    {
+        IWebDriver driver = null;
+        IWebElement e_terms => driver.FindElement(By.Id("uniform-cgv"));
+        IWebElement e_next => driver.FindElement(By.Name("processCarrier"));
+
+        public CheckoutCarrierPart(IWebDriver drv) { driver = drv; }
+
+        public void NextPage()
+        {
+            // check terms and conditions
+            var obj = e_terms;
+            driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(d => { if (obj.Displayed) return true; else return false; });
+            obj.Click();
+
+            Helper.FluidWait(2000, driver);
+
+            // hit button to continue
+            obj = e_next;
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
+            obj.Click();
+
+            Helper.FluidWait(10000, driver);
+        } // NextPage
+
+    } // CheckoutCarrierPart
+
+
+    public class CheckoutPaymentPart
+    {
+        IWebDriver driver = null;
+
+        public CheckoutPaymentPart(IWebDriver drv) { driver = drv; }
+
+
+        public void SelectCheque()
+        {
+            // select payment method "by cheque"
+            var obj = driver.FindElement(By.XPath("//a[@class='cheque']"));
+            driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(8));
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
+            obj.Click();
+
+            Helper.FluidWait(10000, driver);
+        } // SelectMethod
+
+    } // CheckoutPaymentPart
+
+
+    public class OrderConfirmationPart
+    {
+        IWebDriver driver = null;
+
+        public OrderConfirmationPart(IWebDriver drv) { driver = drv; }
+
+
+        public string Confirm()
+        {
+            // confirm order
+            var obj = driver.FindElement(By.XPath("//button[contains(@class,'button-medium')]"));
+            driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
+            obj.Click();
+
+            Helper.FluidWait(10000, driver);
+
+            // extract order id from malformed html section
+            obj = driver.FindElement(By.XPath("//div[contains(@class,'order-confirmation')]"));
+            string bigtext = obj.GetAttribute("innerHTML");
+            var result = Regex.Matches(bigtext, "your order reference [A-Z]{9}");
+            string id = "";
+            if (result.Count > 0) id = result[0].Value.Substring(21);
+
+            return id;
+
+        } // Confirm
+
+
+        public void NextPage()
+        {
+            // go to instant order history
+            var obj = driver.FindElement(By.XPath("//a[starts-with(@class,'button-exclusive')]"));
+            driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
+            obj.Click();
+
+            Helper.FluidWait(10000, driver);
+        } // NextPage
+
+    } // OrderConfirmationPart
+
+
+    public class HistoryPart
+    {
+        IWebDriver driver = null;
+
+        public HistoryPart(IWebDriver drv) { driver = drv; }
+
+
+        public Order GetLatest()
+        {
+            Order latest = new Order();
+            // get order id
+            var obj = driver.FindElement(By.XPath("//a[@class='color-myaccount']"));
+            latest.Id = obj.Text;
+            // get total
+            obj = driver.FindElement(By.XPath("//*[@class='history_price']/span"));
+            latest.Value = Helper.Money(obj.Text);
+
+            return latest;
+        } // GetLatest
+
+    } // HistoryPart
+
 
 
     [TestFixture]
@@ -689,7 +904,7 @@ namespace ShopWithPOM
         [Test]
         [Description("Verify empty Cart by Subtract button")]
         [Order(35)]
-        public void FF_EmptyCartBySubtractButton()
+        public void EmptyCartBySubtractButton()
         {
             var menu = new MenuPart(driver);
             // hitting the menu should return at least one result
@@ -707,6 +922,44 @@ namespace ShopWithPOM
             Assert.That(ajax == null, Is.True);
 
         } // EmptyCartBySubtractButton
+
+
+        [Test]
+        [Description("Checkout and verify latest order in history")]
+        [Order(36)]
+        public void CheckoutAndVerifyHistory()
+        {
+            var menu = new MenuPart(driver);
+            // hitting the menu should return at least one result
+            Assert.That(menu.BringDresses(), Is.True);
+
+            var offer = new OfferPart(driver);
+            Assert.That(offer.PutDifferentProductsInCart(3), Is.True);
+
+            Order myOrder = new Order();
+
+            var cart = new CartPart(driver);
+            myOrder.Value = cart.CheckoutCart();
+
+            var address = new CheckoutAddressPart(driver);
+            address.NextPage();
+
+            var carrier = new CheckoutCarrierPart(driver);
+            carrier.NextPage();
+
+            var payment = new CheckoutPaymentPart(driver);
+            payment.SelectCheque();
+
+            var order = new OrderConfirmationPart(driver);
+            myOrder.Id = order.Confirm();
+            order.NextPage();
+
+            var history = new HistoryPart(driver);
+            Order latestOrder = history.GetLatest();
+
+            Assert.That((myOrder.Id==latestOrder.Id && myOrder.Value==latestOrder.Value), Is.True);
+
+        } // CheckoutAndVerifyHistory
 
 
     } // ShoPom1
