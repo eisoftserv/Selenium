@@ -557,21 +557,26 @@ namespace ShopWithPOM
 
             Helper.FluidWait(5000, driver);
 
-            // removing the item from the Cart
-            obj = driver.FindElement(By.XPath("//a[starts-with(@class,'ajax_cart_block_remove_link')]"));
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
-            obj.Click();
+            obj = driver.FindElement(By.XPath("//*[@class='ajax_cart_quantity']"));
+            int howmany = (int)Helper.Number(obj.Text);
+            if (howmany < 1) return;
 
-            Helper.FluidWait(5000, driver);
+            for (int i=0; i<howmany; i++)
+            {
+                // removing one item from the Cart
+                obj = driver.FindElement(By.XPath("//a[starts-with(@class,'ajax_cart_block_remove_link')]"));
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
+                obj.Click();
+                // the html code is modified (element removed, not just hidden)
+                Helper.FixedWait(5000);
+                Helper.FluidWait(5000, driver);
+            } // end for
 
             // normally the SPAN with "(empty)" text should become visible
             obj = driver.FindElement(By.XPath("//*[starts-with(@class,'ajax_cart_no_product')]"));
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            wait.Until(d => {
-                if (obj.Displayed) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed) return true; else return false; });
 
         } // EmptyAjaxCart
 
@@ -635,7 +640,8 @@ namespace ShopWithPOM
 
         public CheckoutCarrierPart(IWebDriver drv) { driver = drv; }
 
-        public void NextPage()
+
+        public void CheckTerms()
         {
             // check terms and conditions
             var obj = e_terms;
@@ -644,18 +650,79 @@ namespace ShopWithPOM
             wait.Until(d => { if (obj.Displayed) return true; else return false; });
             obj.Click();
 
-            Helper.FluidWait(2000, driver);
+            Helper.FluidWait(5000, driver);
+        } // CheckTerms
 
+
+        public void NextPage()
+        {
             // hit button to continue
-            obj = e_next;
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            var obj = e_next;
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             obj.Click();
 
             Helper.FluidWait(10000, driver);
         } // NextPage
 
+
+        public bool IsPaymentPage()
+        {
+            bool ok = false;
+            // if I'm not on the Payments page, "ok" should be "false"
+            try
+            {
+                var obj = driver.FindElement(By.XPath("//*[@class='navigation_page' and text()='Your payment method']"));
+                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(d => { if (obj.Displayed) return true; else return false; });
+                ok = true;
+            }
+            catch { }
+
+            return ok;
+        } // TryToPay
+
     } // CheckoutCarrierPart
+
+
+    public class AlertPart
+    {
+        IWebDriver driver = null;
+
+        public AlertPart(IWebDriver drv) { driver = drv; }
+
+
+        public bool? IsAlert(string message)
+        {
+            bool? ok = false;
+            // verify presence of Alert
+            try
+            {
+                var obj = driver.FindElement(By.XPath("//*[@class='fancybox-error']"));
+                driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
+                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                wait.Until(d => { if (obj.Displayed) return true; else return false; });
+                if (obj.Text == message) ok = true;
+                else ok = null;
+            }
+            catch { }
+
+            return ok;
+        } // IsAlert
+
+
+        public void Close()
+        {
+            Helper.FixedWait(5000);
+            Helper.FluidWait(5000, driver);
+            var obj = driver.FindElement(By.XPath("//a[@title='Close']"));
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            wait.Until(d => { if (obj.Displayed) return true; else return false; });
+            obj.Click();
+            Helper.FluidWait(5000, driver);
+        } // Close
+
+    } // AlertPart
 
 
     public class CheckoutPaymentPart
@@ -669,6 +736,19 @@ namespace ShopWithPOM
         {
             // select payment method "by cheque"
             var obj = driver.FindElement(By.XPath("//a[@class='cheque']"));
+            driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(8));
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
+            obj.Click();
+
+            Helper.FluidWait(10000, driver);
+        } // SelectMethod
+
+
+        public void SelectBank()
+        {
+            // select payment method "by cheque"
+            var obj = driver.FindElement(By.XPath("//a[@class='bankwire']"));
             driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(8));
             wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
@@ -763,7 +843,7 @@ namespace ShopWithPOM
         {
             string loginUrl = "http://automationpractice.com/index.php?controller=my-account";
             string user = "ellailona2016@gmail.com";
-            string password = "";
+            string password = "maricosan";
 
             // initializing driver
             driver = new FirefoxDriver();
@@ -945,6 +1025,7 @@ namespace ShopWithPOM
             address.NextPage();
 
             var carrier = new CheckoutCarrierPart(driver);
+            carrier.CheckTerms();
             carrier.NextPage();
 
             var payment = new CheckoutPaymentPart(driver);
@@ -957,11 +1038,54 @@ namespace ShopWithPOM
             var history = new HistoryPart(driver);
             Order latestOrder = history.GetLatest();
 
+            cart.EmptyAjaxCart();
+
             Assert.That((myOrder.Id==latestOrder.Id && myOrder.Value==latestOrder.Value), Is.True);
 
         } // CheckoutAndVerifyHistory
 
 
+
+        [Test]
+        [Description("Try checkout without accepting the Terms and Conditions")]
+        [Order(37)]
+        public void CheckoutWithoutTerms()
+        {
+            var menu = new MenuPart(driver);
+            // hitting the menu should return at least one result
+            Assert.That(menu.BringTshirts(), Is.True);
+
+            var offer = new OfferPart(driver);
+            double price = offer.PutProductInCart(0, 1);
+            Assert.That(price >= 0, Is.True);
+
+            Order myOrder = new Order();
+
+            var cart = new CartPart(driver);
+            myOrder.Value = cart.CheckoutCart();
+
+            var address = new CheckoutAddressPart(driver);
+            address.NextPage();
+
+            var modal = new AlertPart(driver);
+            var carrier = new CheckoutCarrierPart(driver);
+
+            // trying to go to the Payment Page without checking Terms & Conditions
+            carrier.NextPage();
+            // verifying if I'm getting the expected alert message
+            // NULL is returned when the message is not the same
+            bool? alert = modal.IsAlert("You must agree to the terms of service before continuing.");
+            if (alert != false) modal.Close();
+            // are we on the Payment page?
+            bool payment = carrier.IsPaymentPage();
+
+            cart.EmptyAjaxCart();
+
+            Assert.That(payment == false && alert != false, Is.True);
+
+        } // CheckoutWithoutTerms
+
+        
     } // ShoPom1
 
 

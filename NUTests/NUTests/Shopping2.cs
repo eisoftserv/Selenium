@@ -364,7 +364,7 @@ namespace NUTests
 
 
         [Test]
-        [Description("Checkout and verify latest order in history")]
+        [Description("Try checkout without accepting the Terms and Conditions")]
         [Order(27)]
         public void FF_CheckoutWithoutTerms()
         {
