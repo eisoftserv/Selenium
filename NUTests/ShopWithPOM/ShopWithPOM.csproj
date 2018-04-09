@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="ShoPom1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShoPom2.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

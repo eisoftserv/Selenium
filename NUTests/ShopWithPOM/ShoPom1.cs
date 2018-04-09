@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace ShopWithPOM
 {
+    //=====================POCOs==================================
     public class Product
     {
         public string Name { get; set; }
@@ -32,8 +33,7 @@ namespace ShopWithPOM
         public double Value { get; set; }
     } //
 
-
-    // miscellaneous helper methods
+    //=========================Helpers==============================
     public static class Helper
     {
         // the UI thread is waiting the indicated number of milliseconds
@@ -42,10 +42,7 @@ namespace ShopWithPOM
             if (fixedMillisec > 0)
             {
                 // waiting on the foreground thread (UI) until timer stops on a threadpool thread
-                var tsk = Task.Run(async () =>
-                {
-                    await Task.Delay(fixedMillisec);
-                });
+                var tsk = Task.Run(async () => { await Task.Delay(fixedMillisec); });
                 tsk.Wait();
                 tsk.Dispose();
             }
@@ -88,7 +85,7 @@ namespace ShopWithPOM
 
     } // Helper
 
-
+    //=======================================================
     public class LoginPart
     {
         IWebDriver driver;
@@ -96,11 +93,7 @@ namespace ShopWithPOM
         IWebElement e_password => driver.FindElement(By.Id("passwd"));
         IWebElement e_submit => driver.FindElement(By.Id("SubmitLogin"));
 
-        public LoginPart(IWebDriver drv)
-        {
-            this.driver = drv;
-        } //
-
+        public LoginPart(IWebDriver drv) { driver = drv; }
 
         public bool Login(string user, string password)
         {
@@ -109,26 +102,16 @@ namespace ShopWithPOM
             var obj = e_user;
             driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => {if (obj.Displayed && obj.Enabled) return true; else return false; });
             obj.Click();
             obj.SendKeys(user + Keys.Tab);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.GetAttribute("value") == user) return true;
-                else return false;
-            });
-
+            wait.Until(d => {if (obj.GetAttribute("value") == user) return true; else return false; });
             obj = e_password;
             obj.Click();
             obj.SendKeys(password + Keys.Tab);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.GetAttribute("value") == password) return true;
-                else return false;
-            });
+            wait.Until(d => {if (obj.GetAttribute("value") == password) return true; else return false; });
 
             obj = e_submit;
             obj.Click();
@@ -137,21 +120,16 @@ namespace ShopWithPOM
             if (driver.Title == "My account - My Store") ok = true;
 
             return ok;
-
         } // Login
 
     } // LoginPart
-    
 
+        //=======================================================
     public class MenuPart
     {
         IWebDriver driver;
 
-        public MenuPart(IWebDriver drv)
-        {
-            this.driver = drv;
-        } //
-
+        public MenuPart(IWebDriver drv) { driver = drv; }
 
         public bool BringDresses()
         {
@@ -162,7 +140,6 @@ namespace ShopWithPOM
             // waiting until products are loaded (via Ajax)
             Helper.FixedWait(10000);
             return (Helper.FluidWait(10000, driver));
-
         } // BringDresses
 
 
@@ -175,12 +152,11 @@ namespace ShopWithPOM
             // waiting until products are loaded (via Ajax)
             Helper.FixedWait(10000);
             return (Helper.FluidWait(10000, driver));
-
         } // BringTshirts
 
     } // MenuPart
 
-
+    //=======================================================
     public class OfferPart
     { 
         IWebDriver driver;
@@ -192,11 +168,7 @@ namespace ShopWithPOM
         ReadOnlyCollection<IWebElement> e_products => driver.FindElements(By.XPath("//div[@class='product-container']"));
         ReadOnlyCollection<IWebElement> e_more_buttons => driver.FindElements(By.XPath("//a[contains(@class,'lnk_view')]"));
 
-        public OfferPart(IWebDriver drv)
-        {
-            this.driver = drv;
-        } //
-
+        public OfferPart(IWebDriver drv) { driver = drv; }
 
         public Product GetSummarytInfo(int position)
         {
@@ -212,7 +184,6 @@ namespace ShopWithPOM
             prod.Price = Helper.Money(prices[pos].Text);
 
             return prod;
-
         } // GetSummaryInfo
 
 
@@ -228,19 +199,14 @@ namespace ShopWithPOM
             var obj = objs[pos];
             driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
+
             var todo = new Actions(driver);
             todo.MoveToElement(obj).Perform();
 
             var btn = btns[pos];
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (btn.Displayed && btn.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (btn.Displayed && btn.Enabled) return true; else return false; });
             btn.Click();
 
             Helper.FluidWait(10000, driver);
@@ -250,7 +216,6 @@ namespace ShopWithPOM
             prod.Price = Helper.Money(e_price.Text);
 
             return prod;
-
         } // GetMoreViewInfo
 
 
@@ -266,28 +231,19 @@ namespace ShopWithPOM
             var obj = objs[pos];
             driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             var todo = new Actions(driver);
             todo.MoveToElement(obj).Perform();
 
             var btn = btns[pos];
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (btn.Displayed && btn.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (btn.Displayed && btn.Enabled) return true; else return false; });
             btn.Click();
 
             // "Quick View" is an IFRAME, we need to step into
             obj = driver.FindElement(By.XPath("//iframe[starts-with(@id,'fancybox')]"));
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             string frameid = obj.GetAttribute("id");
             driver.SwitchTo().Frame(frameid);
 
@@ -304,14 +260,10 @@ namespace ShopWithPOM
             // close quick view
             obj = driver.FindElement(By.XPath("//a[starts-with(@class,'fancybox-item') and contains(@class,'fancybox-close')]"));
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             obj.Click();
 
             return prod;
-
         } // GetQuickViewInfo
 
 
@@ -327,19 +279,13 @@ namespace ShopWithPOM
             var obj = objs[pos];
             driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             var todo = new Actions(driver);
             todo.MoveToElement(obj).Perform();
 
             var btn = btns[pos];
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (btn.Displayed && btn.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (btn.Displayed && btn.Enabled) return true; else return false; });
             btn.Click();
 
             Helper.FluidWait(10000, driver);
@@ -352,34 +298,24 @@ namespace ShopWithPOM
             for (int i=1; i<howmany; i++)
             {
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                wait.Until(d => {
-                    if (plus.Displayed && plus.Enabled) return true;
-                    else return false;
-                });
+                wait.Until(d => { if (plus.Displayed && plus.Enabled) return true; else return false; });
                 plus.Click();
             }
 
             // hit "add to cart" button
             obj = e_submit;
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             obj.Click();
 
             // hit "continue shopping" button
             btn = e_continue;
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (btn.Displayed && btn.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (btn.Displayed && btn.Enabled) return true; else return false; });
             btn.Click();
             wait.Until(d => { if (!btn.Displayed) return true; else return false; });
 
             return price;
-
         } // PutProductInCart
 
 
@@ -417,12 +353,11 @@ namespace ShopWithPOM
             } // end for
 
             return true;
-
         } //PutDifferentProductsInCart
 
     } // OfferPart
-
-
+    
+    //=======================================================
     public class CartPart
     {
         IWebDriver driver;
@@ -431,10 +366,7 @@ namespace ShopWithPOM
         //        ReadOnlyCollection<IWebElement> e_products => driver.FindElements());
 
         public CartPart(IWebDriver drv)
-        {
-            this.driver = drv;
-        } //
-
+        { driver = drv; }
 
         public Stock StepClassicCart(string how)
         {
@@ -445,10 +377,7 @@ namespace ShopWithPOM
             var obj = e_open;
             driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             obj.Click();
 
             Helper.FluidWait(5000, driver);
@@ -460,10 +389,7 @@ namespace ShopWithPOM
             string path = ((how == "+") ? "//a[starts-with(@id,'cart_quantity_up')]" : "//a[starts-with(@id,'cart_quantity_down')]");
             obj = driver.FindElement(By.XPath(path));
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             obj.Click();
 
             // check cart empty condition when needed
@@ -473,10 +399,7 @@ namespace ShopWithPOM
                 Helper.FluidWait(5000, driver);
                 obj = driver.FindElement(By.XPath("//*[text()='Your shopping cart is empty.']"));
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-                wait.Until(d => {
-                    if (obj.Displayed) return true;
-                    else return false;
-                });
+                wait.Until(d => { if (obj.Displayed) return true; else return false; });
                 prod = null;
                 return prod;
             }
@@ -485,10 +408,7 @@ namespace ShopWithPOM
             string newQuantity = (how == "+") ? "2" : "1";
             obj = driver.FindElement(By.XPath("//input[starts-with(@name,'quantity_') and @type='hidden']"));
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.GetAttribute("value") == newQuantity) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.GetAttribute("value") == newQuantity) return true; else return false; });
 
             // get new quantity
             obj = driver.FindElement(By.XPath("//input[starts-with(@class,'cart_quantity_input')]"));
@@ -498,7 +418,6 @@ namespace ShopWithPOM
             prod.Value = Helper.Money(obj.Text);
 
             return prod;
-
         } // StepClassicCart
 
 
@@ -511,18 +430,12 @@ namespace ShopWithPOM
             var obj = e_open;
             driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
 
             obj = driver.FindElement(By.ClassName("shopping_cart"));
             var todo = new Actions(driver);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             todo.MoveToElement(obj);
 
             // get item count and total per first item
@@ -539,7 +452,6 @@ namespace ShopWithPOM
             }
 
             return prod;
-
         } // GetAjaxCart
 
 
@@ -548,23 +460,21 @@ namespace ShopWithPOM
             var obj = e_open;
             driver.ExecuteJavaScript("arguments[0].scrollIntoView(true);", obj);
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-            wait.Until(d => {
-                if (obj.Displayed && obj.Enabled) return true;
-                else return false;
-            });
+            wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             var todo = new Actions(driver);
             todo.MoveToElement(obj).Perform();
 
             Helper.FluidWait(5000, driver);
 
-            obj = driver.FindElement(By.XPath("//*[@class='ajax_cart_quantity']"));
-            int howmany = (int)Helper.Number(obj.Text);
+            string path = "//a[starts-with(@class,'ajax_cart_block_remove_link')]";
+            var objs = driver.FindElements(By.XPath(path));
+            int howmany = objs.Count;
             if (howmany < 1) return;
 
             for (int i=0; i<howmany; i++)
             {
                 // removing one item from the Cart
-                obj = driver.FindElement(By.XPath("//a[starts-with(@class,'ajax_cart_block_remove_link')]"));
+                obj = driver.FindElement(By.XPath(path));
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
                 wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
                 obj.Click();
@@ -577,7 +487,6 @@ namespace ShopWithPOM
             obj = driver.FindElement(By.XPath("//*[starts-with(@class,'ajax_cart_no_product')]"));
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             wait.Until(d => { if (obj.Displayed) return true; else return false; });
-
         } // EmptyAjaxCart
 
 
@@ -602,14 +511,12 @@ namespace ShopWithPOM
             obj.Click();
 
             Helper.FluidWait(10000, driver);
-
             return total;
-
         } // CheckoutCart
 
     } // CartPart
 
-
+    //=======================================================
     public class CheckoutAddressPart
     {
         IWebDriver driver = null;
@@ -626,12 +533,11 @@ namespace ShopWithPOM
             obj.Click();
 
             Helper.FluidWait(10000, driver);
-
         } // NextPage
 
     } // CheckoutAddressPart
 
-
+    //=======================================================
     public class CheckoutCarrierPart
     {
         IWebDriver driver = null;
@@ -639,7 +545,6 @@ namespace ShopWithPOM
         IWebElement e_next => driver.FindElement(By.Name("processCarrier"));
 
         public CheckoutCarrierPart(IWebDriver drv) { driver = drv; }
-
 
         public void CheckTerms()
         {
@@ -684,13 +589,12 @@ namespace ShopWithPOM
 
     } // CheckoutCarrierPart
 
-
+    //=======================================================
     public class AlertPart
     {
         IWebDriver driver = null;
 
         public AlertPart(IWebDriver drv) { driver = drv; }
-
 
         public bool? IsAlert(string message)
         {
@@ -724,13 +628,12 @@ namespace ShopWithPOM
 
     } // AlertPart
 
-
+    //=======================================================
     public class CheckoutPaymentPart
     {
         IWebDriver driver = null;
 
         public CheckoutPaymentPart(IWebDriver drv) { driver = drv; }
-
 
         public void SelectCheque()
         {
@@ -740,7 +643,6 @@ namespace ShopWithPOM
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(8));
             wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             obj.Click();
-
             Helper.FluidWait(10000, driver);
         } // SelectMethod
 
@@ -753,19 +655,18 @@ namespace ShopWithPOM
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(8));
             wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             obj.Click();
-
             Helper.FluidWait(10000, driver);
         } // SelectMethod
 
     } // CheckoutPaymentPart
 
 
+    //=======================================================
     public class OrderConfirmationPart
     {
         IWebDriver driver = null;
 
         public OrderConfirmationPart(IWebDriver drv) { driver = drv; }
-
 
         public string Confirm()
         {
@@ -786,7 +687,6 @@ namespace ShopWithPOM
             if (result.Count > 0) id = result[0].Value.Substring(21);
 
             return id;
-
         } // Confirm
 
 
@@ -798,19 +698,17 @@ namespace ShopWithPOM
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             wait.Until(d => { if (obj.Displayed && obj.Enabled) return true; else return false; });
             obj.Click();
-
             Helper.FluidWait(10000, driver);
         } // NextPage
 
     } // OrderConfirmationPart
 
-
+    //=======================================================
     public class HistoryPart
     {
         IWebDriver driver = null;
 
         public HistoryPart(IWebDriver drv) { driver = drv; }
-
 
         public Order GetLatest()
         {
@@ -826,267 +724,6 @@ namespace ShopWithPOM
         } // GetLatest
 
     } // HistoryPart
+    //=======================================================
 
-
-
-    [TestFixture]
-    [SingleThreaded]
-    [Description("POM exercises for automationpractice.com")]
-    public partial class ShoPom1
-    {
-        internal FirefoxDriver driver = null;
-
-
-        [OneTimeSetUp]
-        [Description("logging in")]
-        public void LoggingIn()
-        {
-            string loginUrl = "http://automationpractice.com/index.php?controller=my-account";
-            string user = "ellailona2016@gmail.com";
-            string password = "maricosan";
-
-            // initializing driver
-            driver = new FirefoxDriver();
-            driver.Manage().Window.Size = new System.Drawing.Size(1280, 720);
-
-            // navigating to the login page
-            driver.Url = loginUrl;
-            bool ok = Helper.FluidWait(10000, driver);
-            Assert.That(ok && (driver.Title == "Login - My Store"), Is.True);
-
-            // logging in
-            var part = new LoginPart(driver);
-            Assert.That(part.Login(user, password), Is.True);
-
-        } // LoggingIn
-
-
-        [OneTimeTearDown]
-        [Description("logging out")]
-        public void LoggingOut()
-        {
-            string logoutUrl = "http://automationpractice.com/index.php?mylogout=";
-            driver.Navigate().GoToUrl(logoutUrl);
-            bool ok = Helper.FluidWait(10000, driver);
-            driver.Quit();
-
-            Assert.That(ok && (driver.Title == "Login - My Store"), Is.True);
-
-        } // LoggingOut
-
-
-        [SetUp]
-        [Description("navigating to the landing page")]
-        public void GoToLandingPage()
-        {
-            string startUrl = "http://automationpractice.com/index.php";
-            driver.Navigate().GoToUrl(startUrl);
-            bool ok = Helper.FluidWait(10000, driver);
-            Assert.That(ok && (driver.Title == "My Store"), Is.True);
-
-        } // GoToLandingPage
-
-
-        [Test]
-        [Description("Product Summary VS More Detail View")]
-        [Order(31)]
-        public void ProductSummary_MoreView()
-        {
-            var menu = new MenuPart(driver);
-            // hitting the menu should return at least one result
-            Assert.That(menu.BringDresses(), Is.True);
-
-            var offer = new OfferPart(driver);
-            Product summary = offer.GetSummarytInfo(0);
-            Product detail = offer.GetMoreViewInfo(0);
-
-            Assert.That(summary!=null && detail!=null && summary.Name==detail.Name && summary.Price==detail.Price, Is.True);
-            
-        } // ProductSummary_MoreView
-
-
-        [Test]
-        [Description("Product Summary VS Quick Detail View")]
-        [Order(32)]
-        public void ProductSummary_QuickView()
-        {
-            var menu = new MenuPart(driver);
-            // hitting the menu should return at least one result
-            Assert.That(menu.BringDresses(), Is.True);
-
-            var offer = new OfferPart(driver);
-            Product summary = offer.GetSummarytInfo(0);
-            Product detail = offer.GetQuickViewInfo(0);
-
-            Assert.That(summary != null && detail != null && summary.Name == detail.Name && summary.Price == detail.Price, Is.True);
-
-        } // ProductSummary_QuickView
-
-
-        [Test]
-        [Description("Verify Add button in Classic Cart")]
-        [Order(33)]
-        public void AddButtonCart()
-        {
-            var menu = new MenuPart(driver);
-            // hitting the menu should return at least one result
-            Assert.That(menu.BringTshirts(), Is.True);
-
-            var offer = new OfferPart(driver);
-            double price = offer.PutProductInCart(0, 1);
-            Assert.That(price >= 0, Is.True);
-
-            var cart = new CartPart(driver);
-            Stock classic = cart.StepClassicCart("+");
-            Assert.That(classic != null, Is.True);
-            Stock ajax = cart.GetAjaxCart();
-            Assert.That(ajax != null, Is.True);
-
-            cart.EmptyAjaxCart();
-
-            // check Classic Cart
-            Assert.That((2 == classic.Quantity && 2 * price == classic.Value), Is.True);
-            //check Ajax Cart
-            Assert.That((2 == ajax.Quantity && 2 * price == ajax.Value), Is.True);
-
-        } // ProductSummary_QuickView
-
-
-        [Test]
-        [Description("Verify Subtract button in Cart")]
-        [Order(34)]
-        public void SubtractButtonCart()
-        {
-            var menu = new MenuPart(driver);
-            // hitting the menu should return at least one result
-            Assert.That(menu.BringTshirts(), Is.True);
-
-            var offer = new OfferPart(driver);
-            double price = offer.PutProductInCart(0, 2);
-            Assert.That(price >= 0, Is.True);
-
-            var cart = new CartPart(driver);
-            Stock classic = cart.StepClassicCart("-");
-            Assert.That(classic != null, Is.True);
-            Stock ajax = cart.GetAjaxCart();
-            Assert.That(ajax != null, Is.True);
-
-            cart.EmptyAjaxCart();
-
-            // check Classic Cart
-            Assert.That((1 == classic.Quantity && price == classic.Value), Is.True);
-            //check Ajax Cart
-            Assert.That((1 == ajax.Quantity && price == ajax.Value), Is.True);
-
-        } // SubtractButtonInCart
-
-
-        [Test]
-        [Description("Verify empty Cart by Subtract button")]
-        [Order(35)]
-        public void EmptyCartBySubtractButton()
-        {
-            var menu = new MenuPart(driver);
-            // hitting the menu should return at least one result
-            Assert.That(menu.BringTshirts(), Is.True);
-
-            var offer = new OfferPart(driver);
-            double price = offer.PutProductInCart(0, 1);
-            Assert.That(price >= 0, Is.True);
-
-            var cart = new CartPart(driver);
-            Stock classic = cart.StepClassicCart(".");
-            Assert.That(classic == null, Is.True);
-
-            Stock ajax = cart.GetAjaxCart();
-            Assert.That(ajax == null, Is.True);
-
-        } // EmptyCartBySubtractButton
-
-
-        [Test]
-        [Description("Checkout and verify latest order in history")]
-        [Order(36)]
-        public void CheckoutAndVerifyHistory()
-        {
-            var menu = new MenuPart(driver);
-            // hitting the menu should return at least one result
-            Assert.That(menu.BringDresses(), Is.True);
-
-            var offer = new OfferPart(driver);
-            Assert.That(offer.PutDifferentProductsInCart(3), Is.True);
-
-            Order myOrder = new Order();
-
-            var cart = new CartPart(driver);
-            myOrder.Value = cart.CheckoutCart();
-
-            var address = new CheckoutAddressPart(driver);
-            address.NextPage();
-
-            var carrier = new CheckoutCarrierPart(driver);
-            carrier.CheckTerms();
-            carrier.NextPage();
-
-            var payment = new CheckoutPaymentPart(driver);
-            payment.SelectCheque();
-
-            var order = new OrderConfirmationPart(driver);
-            myOrder.Id = order.Confirm();
-            order.NextPage();
-
-            var history = new HistoryPart(driver);
-            Order latestOrder = history.GetLatest();
-
-            cart.EmptyAjaxCart();
-
-            Assert.That((myOrder.Id==latestOrder.Id && myOrder.Value==latestOrder.Value), Is.True);
-
-        } // CheckoutAndVerifyHistory
-
-
-
-        [Test]
-        [Description("Try checkout without accepting the Terms and Conditions")]
-        [Order(37)]
-        public void CheckoutWithoutTerms()
-        {
-            var menu = new MenuPart(driver);
-            // hitting the menu should return at least one result
-            Assert.That(menu.BringTshirts(), Is.True);
-
-            var offer = new OfferPart(driver);
-            double price = offer.PutProductInCart(0, 1);
-            Assert.That(price >= 0, Is.True);
-
-            Order myOrder = new Order();
-
-            var cart = new CartPart(driver);
-            myOrder.Value = cart.CheckoutCart();
-
-            var address = new CheckoutAddressPart(driver);
-            address.NextPage();
-
-            var modal = new AlertPart(driver);
-            var carrier = new CheckoutCarrierPart(driver);
-
-            // trying to go to the Payment Page without checking Terms & Conditions
-            carrier.NextPage();
-            // verifying if I'm getting the expected alert message
-            // NULL is returned when the message is not the same
-            bool? alert = modal.IsAlert("You must agree to the terms of service before continuing.");
-            if (alert != false) modal.Close();
-            // are we on the Payment page?
-            bool payment = carrier.IsPaymentPage();
-
-            cart.EmptyAjaxCart();
-
-            Assert.That(payment == false && alert != false, Is.True);
-
-        } // CheckoutWithoutTerms
-
-        
-    } // ShoPom1
-
-
-} // ShopWithPOM
+} // namespace ShopWithPOM
